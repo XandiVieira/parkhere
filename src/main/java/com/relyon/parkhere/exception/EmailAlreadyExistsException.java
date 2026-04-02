@@ -1,7 +1,8 @@
 package com.relyon.parkhere.exception;
 
-public class EmailAlreadyExistsException extends RuntimeException {
+public class EmailAlreadyExistsException extends DomainException {
+
     public EmailAlreadyExistsException(String email) {
-        super("Email already registered: " + email);
+        super("user.email.already.exists", email);
     }
 }

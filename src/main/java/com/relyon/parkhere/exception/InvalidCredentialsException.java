@@ -1,7 +1,8 @@
 package com.relyon.parkhere.exception;
 
-public class InvalidCredentialsException extends RuntimeException {
+public class InvalidCredentialsException extends DomainException {
+
     public InvalidCredentialsException() {
-        super("Invalid email or password");
+        super("auth.invalid.credentials");
     }
 }

@@ -1,5 +1,7 @@
 package com.relyon.parkhere.exception;
 
+import com.relyon.parkhere.service.LocalizedMessageService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,36 +16,43 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final LocalizedMessageService messageService;
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex) {
-        log.warn("Registration attempt with existing email: {}", ex.getMessage());
+        var message = messageService.translate(ex);
+        log.warn("Registration attempt with existing email: {}", message);
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage(), LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), message, LocalDateTime.now()));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        var message = messageService.translate(ex);
         log.warn("Failed login attempt");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), message, LocalDateTime.now()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         var errors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(FieldError::getField, f -> f.getDefaultMessage() != null ? f.getDefaultMessage() : "invalid"));
+        var message = messageService.translate("validation.failed");
         log.warn("Validation failed: {}", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Validation failed", LocalDateTime.now(), errors));
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, LocalDateTime.now(), errors));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        var message = messageService.translate("error.internal");
         log.error("Unexpected error", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), message, LocalDateTime.now()));
     }
 
     public record ErrorResponse(int status, String message, LocalDateTime timestamp, Map<String, String> errors) {
