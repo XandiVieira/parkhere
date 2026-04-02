@@ -3,14 +3,13 @@ package com.relyon.parkhere.model;
 import com.relyon.parkhere.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -18,12 +17,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User implements UserDetails {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+@SuperBuilder
+public class User extends BaseEntity implements UserDetails {
 
     @Column(nullable = false)
     private String name;
@@ -46,23 +41,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -45,6 +45,7 @@ and how reliable that information is. Built with Java 21 + Spring Boot 4.
 ### Git & Commits
 - **Atomic commits** — each commit should represent one logical change (one feature, one fix, one refactor)
 - Do not bundle unrelated changes in the same commit
+- **Never mention Claude, AI, or any co-author in commit messages** — no `Co-Authored-By` lines, no references to AI assistance
 - This is a personal project on a professional MacBook — git user is configured locally per-repo to avoid mixing accounts
 - Local config: `user.name = Alexandre Vieira`, `user.email = xandivieira@gmail.com`
 - Remote: `https://github.com/XandiVieira/parkhere.git`
