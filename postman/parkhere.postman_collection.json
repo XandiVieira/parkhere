@@ -1,0 +1,52 @@
+{
+	"info": {
+		"_postman_id": "parkhere-api-collection",
+		"name": "ParkHere API",
+		"description": "ParkHere - Collaborative parking spot discovery API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"description": "Authentication endpoints",
+			"item": []
+		},
+		{
+			"name": "Users",
+			"description": "User management endpoints",
+			"item": []
+		},
+		{
+			"name": "Parking Spots",
+			"description": "Parking spot CRUD and search endpoints",
+			"item": []
+		},
+		{
+			"name": "Reports",
+			"description": "Parking spot confirmation and report endpoints",
+			"item": []
+		}
+	]
+}
