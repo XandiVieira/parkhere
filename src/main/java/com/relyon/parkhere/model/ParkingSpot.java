@@ -6,6 +6,10 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.locationtech.jts.geom.Point;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "parking_spots")
 @Getter
@@ -40,6 +44,19 @@ public class ParkingSpot extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private int totalConfirmations = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean requiresBooking = false;
+
+    @Column(length = 1000)
+    private String notes;
+
+    private LocalDateTime lastConfirmedAt;
+
+    @OneToMany(mappedBy = "parkingSpot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ParkingSpotSchedule> schedules = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)

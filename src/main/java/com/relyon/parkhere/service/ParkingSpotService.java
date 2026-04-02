@@ -4,6 +4,7 @@ import com.relyon.parkhere.dto.request.CreateSpotRequest;
 import com.relyon.parkhere.dto.response.SpotResponse;
 import com.relyon.parkhere.exception.SpotNotFoundException;
 import com.relyon.parkhere.model.ParkingSpot;
+import com.relyon.parkhere.model.ParkingSpotSchedule;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.repository.ParkingSpotRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +36,22 @@ public class ParkingSpotService {
                 .location(point)
                 .priceMin(request.priceMin())
                 .priceMax(request.priceMax())
+                .requiresBooking(request.requiresBooking())
+                .notes(request.notes())
                 .createdBy(user)
                 .build();
+
+        if (request.schedules() != null) {
+            request.schedules().forEach(s -> {
+                var schedule = ParkingSpotSchedule.builder()
+                        .parkingSpot(spot)
+                        .dayOfWeek(s.dayOfWeek())
+                        .openTime(s.openTime())
+                        .closeTime(s.closeTime())
+                        .build();
+                spot.getSchedules().add(schedule);
+            });
+        }
 
         var saved = parkingSpotRepository.save(spot);
         log.info("Parking spot created: {} by user {}", saved.getId(), user.getEmail());

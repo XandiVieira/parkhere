@@ -4,6 +4,7 @@ import com.relyon.parkhere.model.ParkingSpot;
 import com.relyon.parkhere.model.enums.SpotType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record SpotResponse(
@@ -14,12 +15,20 @@ public record SpotResponse(
         double longitude,
         double priceMin,
         double priceMax,
+        boolean requiresBooking,
+        String notes,
         double trustScore,
         int totalConfirmations,
+        LocalDateTime lastConfirmedAt,
+        List<ScheduleResponse> schedules,
         UUID createdBy,
         LocalDateTime createdAt
 ) {
     public static SpotResponse from(ParkingSpot spot) {
+        var schedules = spot.getSchedules() != null
+                ? spot.getSchedules().stream().map(ScheduleResponse::from).toList()
+                : List.<ScheduleResponse>of();
+
         return new SpotResponse(
                 spot.getId(),
                 spot.getName(),
@@ -28,8 +37,12 @@ public record SpotResponse(
                 spot.getLocation().getX(),
                 spot.getPriceMin(),
                 spot.getPriceMax(),
+                spot.isRequiresBooking(),
+                spot.getNotes(),
                 spot.getTrustScore(),
                 spot.getTotalConfirmations(),
+                spot.getLastConfirmedAt(),
+                schedules,
                 spot.getCreatedBy().getId(),
                 spot.getCreatedAt()
         );

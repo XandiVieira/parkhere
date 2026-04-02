@@ -14,11 +14,14 @@ public record SpotSummaryResponse(
         double longitude,
         double priceMin,
         double priceMax,
+        boolean requiresBooking,
         double trustScore,
         int totalConfirmations,
+        LocalDateTime lastConfirmedAt,
         AvailabilityStatus dominantAvailability,
         Double avgEstimatedPrice,
         Double avgSafetyRating,
         double informalChargePercentage,
+        boolean informalChargeReportedRecently,
         LocalDateTime lastReportAt
 ) {}

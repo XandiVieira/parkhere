@@ -52,6 +52,7 @@ public class ParkingReportService {
         var saved = reportRepository.save(report);
 
         spot.setTotalConfirmations(spot.getTotalConfirmations() + 1);
+        spot.setLastConfirmedAt(LocalDateTime.now());
         spotRepository.save(spot);
 
         log.info("Report submitted for spot {} by user {} (distance: {}m)", spotId, user.getEmail(), (int) distance);
@@ -100,6 +101,10 @@ public class ParkingReportService {
         var informalPercentage = recentReports.isEmpty() ? 0.0
                 : (double) informalChargeCount / recentReports.size() * 100;
 
+        var twoHoursAgo = LocalDateTime.now().minusHours(2);
+        var informalChargeRecently = recentReports.stream()
+                .anyMatch(r -> r.isInformalChargeReported() && r.getCreatedAt().isAfter(twoHoursAgo));
+
         var lastReportAt = recentReports.stream()
                 .findFirst()
                 .map(ParkingReport::getCreatedAt)
@@ -109,11 +114,13 @@ public class ParkingReportService {
                 spot.getId(), spot.getName(), spot.getType(),
                 spot.getLocation().getY(), spot.getLocation().getX(),
                 spot.getPriceMin(), spot.getPriceMax(),
+                spot.isRequiresBooking(),
                 spot.getTrustScore(), spot.getTotalConfirmations(),
+                spot.getLastConfirmedAt(),
                 dominantAvailability,
                 avgPrice > 0 ? avgPrice : null,
                 avgSafety > 0 ? avgSafety : null,
-                informalPercentage, lastReportAt
+                informalPercentage, informalChargeRecently, lastReportAt
         );
     }
 
