@@ -43,8 +43,8 @@ but street parking, informal spots, and everything in between. Think "Waze for p
 
 ## MVP Scope (Phase 1)
 - [x] User registration and authentication (JWT)
-- [ ] Add parking spot (with type, location, price range)
-- [ ] Search spots by radius (geospatial)
+- [x] Add parking spot (with type, location, price range)
+- [x] Search spots by radius (geospatial)
 - [ ] Submit confirmation/report on a spot
 - [ ] Trust score calculation (basic version)
 - [ ] Spot detail view with aggregated info
@@ -88,3 +88,19 @@ Focus on **bars/nightlife areas** or **hospitals/clinics** for cold-start — hi
   - `@WebMvcTest` moved to `org.springframework.boot.webmvc.test.autoconfigure`
   - ObjectMapper not auto-wired in `@WebMvcTest` — instantiate manually
   - Need `HttpStatusEntryPoint(UNAUTHORIZED)` in SecurityConfig for proper 401 responses
+- **BaseEntity** extracted with id, createdAt, updatedAt — all entities extend it with @SuperBuilder
+- **i18n implemented** following mailing-service pattern:
+  - DomainException (messageKey + arguments), LocalizedMessageService, MessageSourceConfig
+  - messages_en.properties + messages_pt.properties in src/main/resources/i18n/
+  - GlobalExceptionHandler uses translated messages
+- **API versioning**: all endpoints at /api/v1/...
+- **Postman E2E Flow** folder with sequential test suite
+- **Location Service implemented:**
+  - ParkingSpot entity (extends BaseEntity, PostGIS Point geometry, SpotType, price range, trust score)
+  - SpotType enum: STREET, PARKING_LOT, MALL, TERRAIN, ZONA_AZUL
+  - ParkingSpotRepository with native PostGIS query (ST_DWithin + ST_Distance for radius search)
+  - ParkingSpotService: create, searchByRadius, getById, getByUser
+  - ParkingSpotController: POST /api/v1/spots, GET /api/v1/spots (radius search), GET /api/v1/spots/{id}, GET /api/v1/spots/mine
+  - Flyway migration V2: parking_spots table with PostGIS extension + GIST index
+  - SpotNotFoundException with i18n
+  - 39 total tests (14 new for spots)
