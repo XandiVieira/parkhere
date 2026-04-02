@@ -37,6 +37,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), message, LocalDateTime.now()));
     }
 
+    @ExceptionHandler(SpotNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSpotNotFound(SpotNotFoundException ex) {
+        var message = messageService.translate(ex);
+        log.warn("Parking spot not found: {}", message);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), message, LocalDateTime.now()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         var errors = ex.getBindingResult().getFieldErrors().stream()
