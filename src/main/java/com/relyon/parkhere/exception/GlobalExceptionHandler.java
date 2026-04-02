@@ -1,5 +1,6 @@
 package com.relyon.parkhere.exception;
 
+import com.relyon.parkhere.dto.response.NearbySpotConflictResponse;
 import com.relyon.parkhere.service.LocalizedMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,14 @@ public class GlobalExceptionHandler {
         log.warn("Failed login attempt");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), message, LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(NearbySpotExistsException.class)
+    public ResponseEntity<NearbySpotConflictResponse> handleNearbySpotExists(NearbySpotExistsException ex) {
+        var message = messageService.translate(ex);
+        log.info("Spot creation blocked — {} nearby spots found", ex.getNearbySpots().size());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new NearbySpotConflictResponse(message, ex.getNearbySpots()));
     }
 
     @ExceptionHandler(SpotNotFoundException.class)

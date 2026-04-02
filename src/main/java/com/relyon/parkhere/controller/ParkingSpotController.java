@@ -23,8 +23,9 @@ public class ParkingSpotController {
 
     @PostMapping
     public ResponseEntity<SpotResponse> create(@AuthenticationPrincipal User user,
-                                               @Valid @RequestBody CreateSpotRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.create(request, user));
+                                               @Valid @RequestBody CreateSpotRequest request,
+                                               @RequestParam(defaultValue = "false") boolean force) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(parkingSpotService.create(request, user, force));
     }
 
     @GetMapping

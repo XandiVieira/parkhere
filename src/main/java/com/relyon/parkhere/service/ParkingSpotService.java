@@ -2,6 +2,7 @@ package com.relyon.parkhere.service;
 
 import com.relyon.parkhere.dto.request.CreateSpotRequest;
 import com.relyon.parkhere.dto.response.SpotResponse;
+import com.relyon.parkhere.exception.NearbySpotExistsException;
 import com.relyon.parkhere.exception.SpotNotFoundException;
 import com.relyon.parkhere.model.ParkingSpot;
 import com.relyon.parkhere.model.ParkingSpotSchedule;
@@ -25,9 +26,19 @@ public class ParkingSpotService {
 
     private final ParkingSpotRepository parkingSpotRepository;
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
+    private static final double NEARBY_THRESHOLD_METERS = 50.0;
 
     @Transactional
-    public SpotResponse create(CreateSpotRequest request, User user) {
+    public SpotResponse create(CreateSpotRequest request, User user, boolean force) {
+        if (!force) {
+            var nearbySpots = searchByRadius(request.latitude(), request.longitude(), NEARBY_THRESHOLD_METERS);
+            if (!nearbySpots.isEmpty()) {
+                log.info("Spot creation near ({}, {}) blocked — {} nearby spots found",
+                        request.latitude(), request.longitude(), nearbySpots.size());
+                throw new NearbySpotExistsException(nearbySpots);
+            }
+        }
+
         var point = GEOMETRY_FACTORY.createPoint(new Coordinate(request.longitude(), request.latitude()));
 
         var spot = ParkingSpot.builder()
@@ -56,7 +67,7 @@ public class ParkingSpotService {
         }
 
         var saved = parkingSpotRepository.save(spot);
-        log.info("Parking spot created: {} by user {}", saved.getId(), user.getEmail());
+        log.info("Parking spot created: {} by user {}{}", saved.getId(), user.getEmail(), force ? " (forced)" : "");
         return SpotResponse.from(saved);
     }
 
