@@ -37,6 +37,7 @@ public class ParkingSpotService {
                 .priceMin(request.priceMin())
                 .priceMax(request.priceMax())
                 .requiresBooking(request.requiresBooking())
+                .estimatedSpots(request.estimatedSpots())
                 .notes(request.notes())
                 .createdBy(user)
                 .build();
@@ -48,6 +49,7 @@ public class ParkingSpotService {
                         .dayOfWeek(s.dayOfWeek())
                         .openTime(s.openTime())
                         .closeTime(s.closeTime())
+                        .paidOnly(s.paidOnly())
                         .build();
                 spot.getSchedules().add(schedule);
             });

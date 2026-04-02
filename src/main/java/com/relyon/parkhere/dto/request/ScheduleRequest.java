@@ -8,5 +8,6 @@ import java.time.LocalTime;
 public record ScheduleRequest(
         @NotNull DayOfWeek dayOfWeek,
         @NotNull LocalTime openTime,
-        @NotNull LocalTime closeTime
+        @NotNull LocalTime closeTime,
+        boolean paidOnly
 ) {}

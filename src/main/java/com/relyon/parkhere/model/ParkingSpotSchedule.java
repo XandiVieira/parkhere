@@ -29,4 +29,8 @@ public class ParkingSpotSchedule extends BaseEntity {
 
     @Column(nullable = false)
     private LocalTime closeTime;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean paidOnly = false;
 }

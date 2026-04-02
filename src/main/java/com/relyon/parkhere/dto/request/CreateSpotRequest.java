@@ -14,6 +14,7 @@ public record CreateSpotRequest(
         @PositiveOrZero double priceMin,
         @PositiveOrZero double priceMax,
         boolean requiresBooking,
+        @Positive Integer estimatedSpots,
         @Size(max = 1000) String notes,
         List<@Valid ScheduleRequest> schedules
 ) {}

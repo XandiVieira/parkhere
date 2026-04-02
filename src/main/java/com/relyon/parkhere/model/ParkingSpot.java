@@ -49,6 +49,8 @@ public class ParkingSpot extends BaseEntity {
     @Builder.Default
     private boolean requiresBooking = false;
 
+    private Integer estimatedSpots;
+
     @Column(length = 1000)
     private String notes;
 
