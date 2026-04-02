@@ -150,7 +150,83 @@
 		{
 			"name": "Parking Spots",
 			"description": "Parking spot CRUD and search endpoints",
-			"item": []
+			"item": [
+				{
+					"name": "Create Spot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Street Parking Lapa\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Spots by Radius",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots"],
+							"query": [
+								{
+									"key": "lat",
+									"value": "-22.9068"
+								},
+								{
+									"key": "lng",
+									"value": "-43.1729"
+								},
+								{
+									"key": "radius",
+									"value": "800"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Spot by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots", "{{spotId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Spots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/mine",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots", "mine"]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
 			"name": "Reports",
@@ -352,7 +428,177 @@
 					]
 				},
 				{
-					"name": "5. Verify profile update persisted",
+					"name": "5. Create a parking spot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Street Parking\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Create spot returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Spot has correct data', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('E2E Street Parking');",
+									"    pm.expect(jsonData.type).to.eql('STREET');",
+									"    pm.collectionVariables.set('spotId', jsonData.id);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "6. Search spots by radius",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots"],
+							"query": [
+								{
+									"key": "lat",
+									"value": "-22.9068"
+								},
+								{
+									"key": "lng",
+									"value": "-43.1729"
+								},
+								{
+									"key": "radius",
+									"value": "800"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Search returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Results contain created spot', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+									"    var spotId = pm.collectionVariables.get('spotId');",
+									"    var found = jsonData.some(function(s) { return s.id === spotId; });",
+									"    pm.expect(found).to.be.true;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "7. Get spot by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots", "{{spotId}}"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get spot returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Spot matches created data', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('E2E Street Parking');",
+									"    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get('spotId'));",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "8. Get my spots",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/mine",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "spots", "mine"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get my spots returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('My spots contains the created spot', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "9. Verify profile update persisted",
 					"request": {
 						"method": "GET",
 						"header": [
