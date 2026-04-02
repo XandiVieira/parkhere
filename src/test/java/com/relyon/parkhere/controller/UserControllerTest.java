@@ -7,6 +7,7 @@ import com.relyon.parkhere.dto.response.UserResponse;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.security.JwtService;
+import com.relyon.parkhere.service.LocalizedMessageService;
 import com.relyon.parkhere.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ class UserControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private LocalizedMessageService localizedMessageService;
+
     private User buildUser() {
         var user = User.builder()
                 .id(UUID.randomUUID())
@@ -65,7 +69,7 @@ class UserControllerTest {
         var response = new UserResponse(user.getId(), "John", "john@test.com", Role.USER, 0.0, user.getCreatedAt());
         when(userService.getProfile(any(User.class))).thenReturn(response);
 
-        mockMvc.perform(get("/api/users/me")
+        mockMvc.perform(get("/api/v1/users/me")
                         .with(SecurityMockMvcRequestPostProcessors.user(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("John"))
@@ -74,7 +78,7 @@ class UserControllerTest {
 
     @Test
     void getProfile_shouldReturn401WhenUnauthenticated() throws Exception {
-        mockMvc.perform(get("/api/users/me"))
+        mockMvc.perform(get("/api/v1/users/me"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -85,7 +89,7 @@ class UserControllerTest {
         var response = new UserResponse(user.getId(), "New Name", "john@test.com", Role.USER, 0.0, user.getCreatedAt());
         when(userService.updateProfile(any(User.class), any(UpdateUserRequest.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/users/me")
+        mockMvc.perform(put("/api/v1/users/me")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -98,7 +102,7 @@ class UserControllerTest {
         var user = buildUser();
         var request = new UpdateUserRequest("");
 
-        mockMvc.perform(put("/api/users/me")
+        mockMvc.perform(put("/api/v1/users/me")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

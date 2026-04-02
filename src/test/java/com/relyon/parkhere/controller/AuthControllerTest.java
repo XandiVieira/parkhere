@@ -10,6 +10,7 @@ import com.relyon.parkhere.exception.EmailAlreadyExistsException;
 import com.relyon.parkhere.exception.InvalidCredentialsException;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.security.JwtService;
+import com.relyon.parkhere.service.LocalizedMessageService;
 import com.relyon.parkhere.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ class AuthControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private LocalizedMessageService localizedMessageService;
+
     private UserResponse sampleUserResponse() {
         return new UserResponse(UUID.randomUUID(), "John", "john@test.com", Role.USER, 0.0, LocalDateTime.now());
     }
@@ -57,7 +61,7 @@ class AuthControllerTest {
         var response = new AuthResponse("jwt-token", sampleUserResponse());
         when(userService.register(any(RegisterRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -70,7 +74,7 @@ class AuthControllerTest {
         var request = new RegisterRequest("John", "john@test.com", "password123");
         when(userService.register(any(RegisterRequest.class))).thenThrow(new EmailAlreadyExistsException("john@test.com"));
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
@@ -80,7 +84,7 @@ class AuthControllerTest {
     void register_shouldReturn400ForInvalidInput() throws Exception {
         var request = new RegisterRequest("", "not-an-email", "short");
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -92,7 +96,7 @@ class AuthControllerTest {
         var response = new AuthResponse("jwt-token", sampleUserResponse());
         when(userService.login(any(LoginRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -104,7 +108,7 @@ class AuthControllerTest {
         var request = new LoginRequest("john@test.com", "wrong");
         when(userService.login(any(LoginRequest.class))).thenThrow(new InvalidCredentialsException());
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
