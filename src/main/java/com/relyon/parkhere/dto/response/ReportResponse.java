@@ -1,0 +1,35 @@
+package com.relyon.parkhere.dto.response;
+
+import com.relyon.parkhere.model.ParkingReport;
+import com.relyon.parkhere.model.enums.AvailabilityStatus;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public record ReportResponse(
+        UUID id,
+        UUID spotId,
+        UUID userId,
+        AvailabilityStatus availabilityStatus,
+        Double estimatedPrice,
+        Integer safetyRating,
+        boolean informalChargeReported,
+        String note,
+        double gpsDistanceMeters,
+        LocalDateTime createdAt
+) {
+    public static ReportResponse from(ParkingReport report) {
+        return new ReportResponse(
+                report.getId(),
+                report.getParkingSpot().getId(),
+                report.getUser().getId(),
+                report.getAvailabilityStatus(),
+                report.getEstimatedPrice(),
+                report.getSafetyRating(),
+                report.isInformalChargeReported(),
+                report.getNote(),
+                report.getGpsDistanceMeters(),
+                report.getCreatedAt()
+        );
+    }
+}
