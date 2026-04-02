@@ -69,7 +69,7 @@ class ParkingSpotServiceTest {
     @Test
     void create_shouldSaveAndReturnSpotResponse() {
         var user = buildUser();
-        var request = new CreateSpotRequest("Street Parking", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null);
+        var request = new CreateSpotRequest("Street Parking", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
         when(parkingSpotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> {
             var spot = inv.<ParkingSpot>getArgument(0);
             spot.setId(UUID.randomUUID());

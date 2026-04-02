@@ -71,7 +71,7 @@ class ParkingSpotControllerTest {
     private SpotResponse sampleSpotResponse(UUID createdBy) {
         return new SpotResponse(
                 UUID.randomUUID(), "Test Spot", SpotType.STREET,
-                -22.9068, -43.1729, 5.0, 15.0, false, null,
+                -22.9068, -43.1729, 5.0, 15.0, false, null, null,
                 0.0, 0, null, List.of(),
                 createdBy, LocalDateTime.now()
         );
@@ -80,7 +80,7 @@ class ParkingSpotControllerTest {
     @Test
     void create_shouldReturn201() throws Exception {
         var user = buildUser();
-        var request = new CreateSpotRequest("Test Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null);
+        var request = new CreateSpotRequest("Test Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
         var response = sampleSpotResponse(user.getId());
         when(parkingSpotService.create(any(CreateSpotRequest.class), any(User.class))).thenReturn(response);
 
@@ -95,7 +95,7 @@ class ParkingSpotControllerTest {
 
     @Test
     void create_shouldReturn401WhenUnauthenticated() throws Exception {
-        var request = new CreateSpotRequest("Test Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null);
+        var request = new CreateSpotRequest("Test Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
 
         mockMvc.perform(post("/api/v1/spots")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ class ParkingSpotControllerTest {
     @Test
     void create_shouldReturn400ForInvalidInput() throws Exception {
         var user = buildUser();
-        var request = new CreateSpotRequest("", null, -22.9068, -43.1729, -1.0, 15.0, false, null, null);
+        var request = new CreateSpotRequest("", null, -22.9068, -43.1729, -1.0, 15.0, false, null, null, null);
 
         mockMvc.perform(post("/api/v1/spots")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
