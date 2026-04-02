@@ -1,6 +1,7 @@
 package com.relyon.parkhere.service;
 
 import com.relyon.parkhere.dto.request.CreateSpotRequest;
+import com.relyon.parkhere.exception.NearbySpotExistsException;
 import com.relyon.parkhere.exception.SpotNotFoundException;
 import com.relyon.parkhere.model.ParkingSpot;
 import com.relyon.parkhere.model.User;
@@ -78,7 +79,7 @@ class ParkingSpotServiceTest {
             return spot;
         });
 
-        var response = parkingSpotService.create(request, user);
+        var response = parkingSpotService.create(request, user, true);
 
         assertNotNull(response);
         assertEquals("Street Parking", response.name());
@@ -87,6 +88,40 @@ class ParkingSpotServiceTest {
         assertEquals(-43.1729, response.longitude(), 0.0001);
         assertEquals(5.0, response.priceMin());
         assertEquals(15.0, response.priceMax());
+        verify(parkingSpotRepository).save(any(ParkingSpot.class));
+    }
+
+    @Test
+    void create_shouldThrowWhenNearbySpotExistsAndNotForced() {
+        var user = buildUser();
+        var existingSpot = buildSpot(user);
+        var request = new CreateSpotRequest("Duplicate Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
+        when(parkingSpotRepository.findWithinRadius(-22.9068, -43.1729, 50.0))
+                .thenReturn(List.of(existingSpot));
+
+        var exception = assertThrows(NearbySpotExistsException.class,
+                () -> parkingSpotService.create(request, user, false));
+
+        assertEquals(1, exception.getNearbySpots().size());
+        verify(parkingSpotRepository, never()).save(any());
+    }
+
+    @Test
+    void create_shouldAllowWhenNearbySpotExistsAndForced() {
+        var user = buildUser();
+        var request = new CreateSpotRequest("Forced Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
+        when(parkingSpotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> {
+            var spot = inv.<ParkingSpot>getArgument(0);
+            spot.setId(UUID.randomUUID());
+            spot.setCreatedAt(LocalDateTime.now());
+            spot.setUpdatedAt(LocalDateTime.now());
+            return spot;
+        });
+
+        var response = parkingSpotService.create(request, user, true);
+
+        assertNotNull(response);
+        assertEquals("Forced Spot", response.name());
         verify(parkingSpotRepository).save(any(ParkingSpot.class));
     }
 

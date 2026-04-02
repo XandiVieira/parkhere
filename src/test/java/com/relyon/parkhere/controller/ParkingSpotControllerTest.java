@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -82,7 +83,7 @@ class ParkingSpotControllerTest {
         var user = buildUser();
         var request = new CreateSpotRequest("Test Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
         var response = sampleSpotResponse(user.getId());
-        when(parkingSpotService.create(any(CreateSpotRequest.class), any(User.class))).thenReturn(response);
+        when(parkingSpotService.create(any(CreateSpotRequest.class), any(User.class), eq(false))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/spots")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
