@@ -45,9 +45,9 @@ but street parking, informal spots, and everything in between. Think "Waze for p
 - [x] User registration and authentication (JWT)
 - [x] Add parking spot (with type, location, price range)
 - [x] Search spots by radius (geospatial)
-- [ ] Submit confirmation/report on a spot
+- [x] Submit confirmation/report on a spot
+- [x] Spot detail view with aggregated info (summary endpoint)
 - [ ] Trust score calculation (basic version)
-- [ ] Spot detail view with aggregated info
 
 ### NOT in MVP
 - Reservations, payments, navigation, ML predictions, camera recognition, complex gamification
@@ -104,3 +104,12 @@ Focus on **bars/nightlife areas** or **hospitals/clinics** for cold-start — hi
   - Flyway migration V2: parking_spots table with PostGIS extension + GIST index
   - SpotNotFoundException with i18n
   - 39 total tests (14 new for spots)
+- **Report/Confirmation Service implemented:**
+  - ParkingReport entity (extends BaseEntity, refs spot + user, availability, price, safety, informal charge, note, GPS distance)
+  - AvailabilityStatus enum: AVAILABLE, UNAVAILABLE, UNKNOWN
+  - ParkingReportRepository with recent reports queries (24h window for summary)
+  - ParkingReportService: submitReport (with Haversine GPS distance calc), getReportsForSpot, getSummary
+  - Summary aggregation: dominant availability, avg price, avg safety, informal charge %, last report time
+  - ParkingReportController: POST /api/v1/spots/{id}/reports, GET .../reports, GET .../summary
+  - Flyway migration V3: parking_reports table with indexes
+  - 51 total tests (12 new for reports)
