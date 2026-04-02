@@ -47,9 +47,9 @@
 							"raw": "{\n\t\"name\": \"John Doe\",\n\t\"email\": \"john@example.com\",\n\t\"password\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/auth/register",
+							"raw": "{{baseUrl}}/api/v1/auth/register",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "register"]
+							"path": ["api", "v1", "auth", "register"]
 						}
 					},
 					"response": [],
@@ -83,9 +83,9 @@
 							"raw": "{\n\t\"email\": \"john@example.com\",\n\t\"password\": \"password123\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/auth/login",
+							"raw": "{{baseUrl}}/api/v1/auth/login",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "login"]
+							"path": ["api", "v1", "auth", "login"]
 						}
 					},
 					"response": [],
@@ -116,9 +116,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/users/me",
+							"raw": "{{baseUrl}}/api/v1/users/me",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me"]
+							"path": ["api", "v1", "users", "me"]
 						}
 					},
 					"response": []
@@ -138,9 +138,9 @@
 							"raw": "{\n\t\"name\": \"New Name\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/users/me",
+							"raw": "{{baseUrl}}/api/v1/users/me",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me"]
+							"path": ["api", "v1", "users", "me"]
 						}
 					},
 					"response": []
@@ -156,6 +156,237 @@
 			"name": "Reports",
 			"description": "Parking spot confirmation and report endpoints",
 			"item": []
+		},
+		{
+			"name": "E2E Flow",
+			"description": "End-to-end test flow. Run all requests in order to test the full API. Each request sets data needed by the next one.",
+			"item": [
+				{
+					"name": "1. Register new user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Test User\",\n\t\"email\": \"e2e-{{$timestamp}}@test.com\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "register"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var email = 'e2e-' + Date.now() + '@test.com';",
+									"pm.collectionVariables.set('e2eEmail', email);",
+									"pm.request.body.raw = JSON.stringify({",
+									"    name: 'E2E Test User',",
+									"    email: email,",
+									"    password: 'password123'",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Response has token and user', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.expect(jsonData.user.name).to.eql('E2E Test User');",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"    pm.collectionVariables.set('e2eUserId', jsonData.user.id);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "2. Login with registered user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{e2eEmail}}\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Login returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response has token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "3. Get my profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "me"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get profile returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Profile has correct data', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('E2E Test User');",
+									"    pm.expect(jsonData.email).to.eql(pm.collectionVariables.get('e2eEmail'));",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "4. Update my profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Updated E2E User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "me"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Update profile returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Name was updated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('Updated E2E User');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "5. Verify profile update persisted",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "users", "me"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get profile returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Updated name persisted', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('Updated E2E User');",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			]
 		}
 	]
 }
