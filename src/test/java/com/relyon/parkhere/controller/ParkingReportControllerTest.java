@@ -147,9 +147,10 @@ class ParkingReportControllerTest {
         var spotId = UUID.randomUUID();
         var summary = new SpotSummaryResponse(
                 spotId, "Test Spot", SpotType.STREET,
-                -22.9068, -43.1729, 5.0, 15.0,
-                0.75, 10, AvailabilityStatus.AVAILABLE,
-                10.0, 4.0, 20.0, LocalDateTime.now()
+                -22.9068, -43.1729, 5.0, 15.0, false,
+                0.75, 10, LocalDateTime.now(),
+                AvailabilityStatus.AVAILABLE,
+                10.0, 4.0, 20.0, false, LocalDateTime.now()
         );
         when(reportService.getSummary(spotId)).thenReturn(summary);
 
