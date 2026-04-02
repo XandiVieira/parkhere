@@ -42,7 +42,7 @@ but street parking, informal spots, and everything in between. Think "Waze for p
 - Filter by price, type, recency of confirmation
 
 ## MVP Scope (Phase 1)
-- [ ] User registration and authentication (JWT)
+- [x] User registration and authentication (JWT)
 - [ ] Add parking spot (with type, location, price range)
 - [ ] Search spots by radius (geospatial)
 - [ ] Submit confirmation/report on a spot
@@ -70,3 +70,21 @@ Focus on **bars/nightlife areas** or **hospitals/clinics** for cold-start — hi
 - Created Postman collection structure
 - Added missing dependencies: Flyway, JWT, Hibernate Spatial
 - Established coding conventions: var for locals, functional style, minimal comments, SLF4J, unit test coverage
+- Git repo initialized with local user config (personal account on work machine)
+- **User Service implemented:**
+  - User entity (UUID id, name, email, password, role, reputationScore, active, timestamps)
+  - Role enum (USER, ADMIN)
+  - UserRepository with findByEmail/existsByEmail
+  - JWT auth: JwtService (generate/validate tokens), JwtAuthenticationFilter
+  - SecurityConfig: stateless sessions, JWT filter, BCrypt, public auth endpoints
+  - DTOs: RegisterRequest, LoginRequest, UpdateUserRequest, AuthResponse, UserResponse
+  - AuthController: POST /api/auth/register (201), POST /api/auth/login (200)
+  - UserController: GET /api/users/me, PUT /api/users/me (authenticated)
+  - GlobalExceptionHandler: 409 email conflict, 401 bad credentials, 400 validation, 500 generic
+  - Flyway migration V1: users table
+  - 22 unit tests (JwtService: 5, UserService: 7, AuthController: 5, UserController: 4, contextLoads: 1)
+  - Postman collection updated with all 4 endpoints + auto token extraction
+- **Spring Boot 4 notes:**
+  - `@WebMvcTest` moved to `org.springframework.boot.webmvc.test.autoconfigure`
+  - ObjectMapper not auto-wired in `@WebMvcTest` — instantiate manually
+  - Need `HttpStatusEntryPoint(UNAUTHORIZED)` in SecurityConfig for proper 401 responses
