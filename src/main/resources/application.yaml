@@ -1,3 +1,27 @@
 spring:
   application:
     name: parkhere
+  datasource:
+    url: jdbc:postgresql://localhost:5432/parkhere
+    username: ${DB_USERNAME:parkhere}
+    password: ${DB_PASSWORD:parkhere}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET:parkhere-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
+  expiration: 86400000
+
+logging:
+  level:
+    com.relyon.parkhere: DEBUG
+    org.springframework.security: WARN
