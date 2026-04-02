@@ -163,7 +163,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\": \"Street Parking Lapa\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0\n}"
+							"raw": "{\n\t\"name\": \"Street Parking Lapa\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0,\n\t\"requiresBooking\": false,\n\t\"notes\": \"Calm street near Lapa arches, gets busy on weekends\",\n\t\"schedules\": [\n\t\t{\"dayOfWeek\": \"MONDAY\", \"openTime\": \"08:00\", \"closeTime\": \"18:00\"},\n\t\t{\"dayOfWeek\": \"TUESDAY\", \"openTime\": \"08:00\", \"closeTime\": \"18:00\"}\n\t]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots",
@@ -492,7 +492,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\": \"E2E Street Parking\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0\n}"
+							"raw": "{\n\t\"name\": \"E2E Street Parking\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0,\n\t\"requiresBooking\": false,\n\t\"notes\": \"E2E test spot\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots",
