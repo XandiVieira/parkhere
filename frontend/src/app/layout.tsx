@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ParkHere - Find Parking Spots",
-  description: "Collaborative parking spot discovery app",
+  title: "ParkHere - Encontre Vagas de Estacionamento",
+  description: "Aplicativo colaborativo de descoberta de vagas",
 };
 
 export default function RootLayout({

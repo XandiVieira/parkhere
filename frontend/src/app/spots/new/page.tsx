@@ -17,10 +17,10 @@ const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), 
 });
 
 const SPOT_TYPES: { value: SpotType; label: string }[] = [
-  { value: "STREET", label: "Street" },
-  { value: "PARKING_LOT", label: "Parking Lot" },
-  { value: "MALL", label: "Mall" },
-  { value: "TERRAIN", label: "Terrain" },
+  { value: "STREET", label: "Rua" },
+  { value: "PARKING_LOT", label: "Estacionamento" },
+  { value: "MALL", label: "Shopping" },
+  { value: "TERRAIN", label: "Terreno" },
   { value: "ZONA_AZUL", label: "Zona Azul" },
 ];
 
@@ -30,8 +30,8 @@ export default function NewSpotPage() {
 
   const [name, setName] = useState("");
   const [type, setType] = useState<SpotType>("STREET");
-  const [priceMin, setPriceMin] = useState("0");
-  const [priceMax, setPriceMax] = useState("0");
+  const [priceMín, setPriceMín] = useState("0");
+  const [priceMáx, setPriceMáx] = useState("0");
   const [notes, setNotes] = useState("");
   const [requiresBooking, setRequiresBooking] = useState(false);
   const [estimatedSpots, setEstimatedSpots] = useState("");
@@ -61,7 +61,7 @@ export default function NewSpotPage() {
     setError("");
 
     if (!latitude || !longitude) {
-      setError("Please select a location on the map");
+      setError("Selecione uma localização no mapa");
       return;
     }
 
@@ -72,8 +72,8 @@ export default function NewSpotPage() {
         type,
         latitude,
         longitude,
-        priceMin: parseFloat(priceMin) || 0,
-        priceMax: parseFloat(priceMax) || 0,
+        priceMín: parseFloat(priceMín) || 0,
+        priceMáx: parseFloat(priceMáx) || 0,
         notes: notes || null,
         requiresBooking,
         estimatedSpots: estimatedSpots ? parseInt(estimatedSpots) : null,
@@ -84,7 +84,7 @@ export default function NewSpotPage() {
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
-      setError(msg || "Failed to create spot");
+      setError(msg || "Falha ao criar vaga");
     } finally {
       setLoading(false);
     }
@@ -137,30 +137,30 @@ export default function NewSpotPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="priceMin" className="mb-1 block text-sm font-medium text-gray-700">
-              Min Price (R$)
+            <label htmlFor="priceMín" className="mb-1 block text-sm font-medium text-gray-700">
+              Mín Price (R$)
             </label>
             <input
-              id="priceMin"
+              id="priceMín"
               type="number"
               min="0"
               step="0.5"
-              value={priceMin}
-              onChange={(e) => setPriceMin(e.target.value)}
+              value={priceMín}
+              onChange={(e) => setPriceMín(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="priceMax" className="mb-1 block text-sm font-medium text-gray-700">
-              Max Price (R$)
+            <label htmlFor="priceMáx" className="mb-1 block text-sm font-medium text-gray-700">
+              Máx Price (R$)
             </label>
             <input
-              id="priceMax"
+              id="priceMáx"
               type="number"
               min="0"
               step="0.5"
-              value={priceMax}
-              onChange={(e) => setPriceMax(e.target.value)}
+              value={priceMáx}
+              onChange={(e) => setPriceMáx(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
           </div>
@@ -168,7 +168,7 @@ export default function NewSpotPage() {
 
         <div>
           <label htmlFor="estimatedSpots" className="mb-1 block text-sm font-medium text-gray-700">
-            Estimated Spots (optional)
+            Vagas Estimadas (optional)
           </label>
           <input
             id="estimatedSpots"
@@ -208,7 +208,7 @@ export default function NewSpotPage() {
         {/* Location Picker */}
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Location (click on map)
+            Localização (clique no mapa)
           </label>
           <div className="h-64 overflow-hidden rounded-md border border-gray-300">
             <LocationPicker
@@ -230,7 +230,7 @@ export default function NewSpotPage() {
           disabled={loading}
           className="w-full rounded-md bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Creating..." : "Create Spot"}
+          {loading ? "Criando..." : "Criar Vaga"}
         </button>
       </form>
     </div>

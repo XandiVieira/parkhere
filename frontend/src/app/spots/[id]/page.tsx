@@ -113,7 +113,7 @@ export default function SpotDetailPage({
     if (!confirm("Tem certeza que deseja solicitar remoção desta vaga?")) return;
     setRemovalLoading(true);
     try {
-      await removalApi.request(id, "Spot no longer exists or is inaccurate");
+      await removalApi.request(id, "Vaga não existe mais ou está incorreta");
       alert("Solicitação de remoção enviada");
     } catch {
       alert("Falha ao solicitar remoção");
@@ -134,7 +134,7 @@ export default function SpotDetailPage({
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">{error || "Spot not found"}</p>
+          <p className="text-red-600">{error || "Vaga não encontrada"}</p>
           <button onClick={() => router.back()} className="mt-2 text-sm text-blue-600 hover:underline">
             Go back
           </button>

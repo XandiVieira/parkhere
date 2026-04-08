@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full rounded-md bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
+              {loading ? "Enviando..." : "Enviar Link de Recuperação"}
             </button>
 
             <div className="text-center text-sm text-gray-600">

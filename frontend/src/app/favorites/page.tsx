@@ -94,7 +94,7 @@ export default function FavoritesPage() {
         </>
       ) : (
         <p className="text-center text-sm text-gray-500">
-          No favorites yet. Browse the map and favorite spots you like!
+          Nenhum favorito ainda. Navegue pelo mapa e favorite as vagas que gostar!
         </p>
       )}
     </div>

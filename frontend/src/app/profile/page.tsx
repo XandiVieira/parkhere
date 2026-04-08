@@ -51,8 +51,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploadingPic, setUploadingPic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [prefTypes, setPrefTypes] = useState<Set<string>>(new Set());
-  const [prefTrust, setPrefTrust] = useState<Set<string>>(new Set());
+  const [prefTypes, setPrefTypes] = useState<Set<string>>(new Set(SPOT_TYPES.map(s => s.value)));
+  const [prefTrust, setPrefTrust] = useState<Set<string>>(new Set(TRUST_LEVELS.map(s => s.value)));
   const [prefFreeOnly, setPrefFreeOnly] = useState(false);
   const [prefSaving, setPrefSaving] = useState(false);
   const [prefMsg, setPrefMsg] = useState("");

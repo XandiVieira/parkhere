@@ -39,7 +39,7 @@ export default function RegisterPage() {
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
-      setError(msg || "Registration failed. Please try again.");
+      setError(msg || "Falha ao cadastrar. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="Your name"
+              placeholder="Seu nome"
             />
           </div>
 
@@ -96,7 +96,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="At least 8 characters"
+              placeholder="Pelo menos 8 caracteres"
             />
           </div>
 
@@ -111,7 +111,7 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="Repeat your password"
+              placeholder="Repita sua senha"
             />
           </div>
 
@@ -120,7 +120,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full rounded-md bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? "Criando conta..." : "Criar Conta"}
           </button>
         </form>
 
