@@ -14,4 +14,5 @@ COPY --from=build /app/.next/static .next/static
 COPY --from=build /app/public public
 EXPOSE 10000
 ENV PORT=10000
+ENV HOSTNAME=0.0.0.0
 CMD ["node", "server.js"]
