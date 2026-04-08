@@ -1,3 +1,17 @@
+/**
+ * API Client — ALL backend HTTP calls go through here.
+ *
+ * Think of this like a Java Feign client or RestTemplate wrapper.
+ * Each section (authApi, spotsApi, etc.) groups related endpoints.
+ *
+ * The JWT token is automatically attached to every request via the interceptor below.
+ * If the backend returns 401, the user is automatically logged out and redirected to /login.
+ *
+ * Usage in components:
+ *   import { spotsApi } from "@/lib/api";
+ *   const response = await spotsApi.getById("some-uuid");
+ *   const spot = response.data;
+ */
 import axios from "axios";
 import type {
   AuthResponse,
