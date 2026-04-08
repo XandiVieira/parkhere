@@ -317,3 +317,23 @@ Four API maturity features implemented:
 - **Dependencies added:** springdoc-openapi-starter-webmvc-ui 2.8.6, bucket4j_jdk17-core 8.14.0
 - **Test coverage:** 139 -> 148 tests
 - **Migration:** V14 (leaderboard_entries)
+
+### Session 5 (2026-04-08)
+
+Frontend UX improvements and feature additions:
+
+- **Google OAuth:** Backend service + frontend Google Sign-In button on login page
+- **Navigate to spot:** "Navegar" button opens Google Maps directions from popup and detail page
+- **Price on map pins:** Price labels ("R$5-15" or "Grátis") below each marker
+- **Quick report:** Floating 📍 button finds nearest spot, opens bottom-sheet report modal
+- **List view:** Map/Lista toggle shows spots sorted by distance with SpotCard components
+- **User preferences:** Backend entity + endpoints, profile page UI for default filters, auto-applied on app load
+- **Availability rate:** Backend calculates availabilityRate in spot summary
+- **Nickname + profile pic:** Backend fields + upload endpoint, avatar in navbar
+- **Filter panel:** Trust level, spot type, free only checkboxes with legend
+- **Heart favorite:** Toggle with ❤️/🤍, auto-detects existing favorites
+- **i18n:** Portuguese as default language for UI
+- **@Transactional fixes:** All read services now have readOnly=true to prevent lazy loading issues
+
+- **Backend:** 153 tests, V1-V4 migrations (consolidated from V1-V14)
+- **Frontend:** Next.js 15, 11 routes, full Portuguese UI
