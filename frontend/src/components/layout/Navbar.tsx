@@ -45,7 +45,7 @@ export default function Navbar() {
               ))}
               <div className="flex items-center gap-2">
                 {user?.profilePicUrl ? (
-                  <img src={`http://localhost:8080${user.profilePicUrl}`} alt="" className="h-7 w-7 rounded-full object-cover" />
+                  <img src={`${(process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080")}${user.profilePicUrl}`} alt="" className="h-7 w-7 rounded-full object-cover" />
                 ) : (
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
                     {(user?.nickname || user?.name || "?").charAt(0).toUpperCase()}

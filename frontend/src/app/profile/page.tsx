@@ -131,7 +131,7 @@ export default function ProfilePage() {
 
   if (!isAuthenticated || !user) return null;
 
-  const picUrl = user.profilePicUrl ? `http://localhost:8080${user.profilePicUrl}` : null;
+  const picUrl = user.profilePicUrl ? `${(process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080")}${user.profilePicUrl}` : null;
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">

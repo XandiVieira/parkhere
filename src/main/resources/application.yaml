@@ -2,7 +2,7 @@ spring:
   application:
     name: parkhere
   datasource:
-    url: jdbc:postgresql://localhost:5432/parkhere
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/parkhere}
     username: ${DB_USERNAME:parkhere}
     password: ${DB_PASSWORD:parkhere}
     driver-class-name: org.postgresql.Driver
@@ -39,6 +39,8 @@ parkhere:
     cron: "0 0 * * * *"
   reset:
     base-url: ${RESET_BASE_URL:http://localhost:3000/reset-password}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
   google:
     client-id: ${GOOGLE_CLIENT_ID:345298825311-1vpn0jdmbulhrfnhoor2incsnnlgmfs6.apps.googleusercontent.com}
   geocoding:
