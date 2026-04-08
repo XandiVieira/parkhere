@@ -144,6 +144,53 @@
 					]
 				},
 				{
+					"name": "Google Auth",
+					"description": "Authenticate with a Google ID token. Returns JWT + user info. Creates account if user does not exist.",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"credential\": \"<google-id-token>\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/google",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"google"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.token);",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
 					"name": "Forgot Password",
 					"request": {
 						"auth": {
@@ -263,6 +310,39 @@
 					"response": []
 				},
 				{
+					"name": "Update Profile Picture",
+					"description": "Upload a new profile picture. Accepts multipart/form-data with a single file part.",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "",
+									"description": "Profile picture file (JPEG/PNG/WebP)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/profile-pic",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"profile-pic"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Change Password",
 					"request": {
 						"method": "PUT",
@@ -287,6 +367,37 @@
 								"users",
 								"me",
 								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Favorites",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/favorites?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"favorites"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
 							]
 						}
 					},
@@ -333,6 +444,57 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get My Preferences",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/preferences",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"preferences"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"defaultSpotTypes\": [\"STREET\", \"GARAGE\"],\n\t\"defaultTrustLevels\": [\"HIGH\", \"MEDIUM\"],\n\t\"freeOnly\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/preferences",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"preferences"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -355,7 +517,7 @@
 							"raw": "{\n\t\"name\": \"Street Parking Lapa\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0,\n\t\"requiresBooking\": false,\n\t\"notes\": \"Calm street near Lapa arches, gets busy on weekends\",\n\t\"schedules\": [\n\t\t{\"dayOfWeek\": \"MONDAY\", \"openTime\": \"08:00\", \"closeTime\": \"18:00\"},\n\t\t{\"dayOfWeek\": \"TUESDAY\", \"openTime\": \"08:00\", \"closeTime\": \"18:00\"}\n\t]\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/spots",
+							"raw": "{{baseUrl}}/api/v1/spots?force=false",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -363,6 +525,13 @@
 								"api",
 								"v1",
 								"spots"
+							],
+							"query": [
+								{
+									"key": "force",
+									"value": "false",
+									"description": "Set to true to override nearby spot conflict check"
+								}
 							]
 						}
 					},
@@ -374,7 +543,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800&type=STREET&maxPrice=20.0&requiresBooking=false&minTrustScore=0.5&page=0&size=20",
+							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800&type=STREET&maxPrice=20.0&requiresBooking=false&minTrustScore=0.5&query=Lapa&page=0&size=20",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -417,6 +586,12 @@
 									"disabled": true
 								},
 								{
+									"key": "query",
+									"value": "Lapa",
+									"disabled": true,
+									"description": "Free-text search on spot name/notes"
+								},
+								{
 									"key": "page",
 									"value": "0"
 								},
@@ -450,32 +625,6 @@
 					"response": []
 				},
 				{
-					"name": "Get My Spots",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/spots/mine",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"spots",
-								"mine"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Spot Management",
-			"description": "Spot update and management endpoints",
-			"item": [
-				{
 					"name": "Update Spot",
 					"request": {
 						"method": "PUT",
@@ -499,6 +648,36 @@
 								"v1",
 								"spots",
 								"{{spotId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Spots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/mine?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"mine"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
 							]
 						}
 					},
@@ -551,37 +730,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Get My Favorites",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/users/me/favorites?page=0&size=20",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"me",
-								"favorites"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "size",
-									"value": "20"
-								}
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -590,8 +738,8 @@
 			"description": "Parking spot confirmation and report endpoints",
 			"item": [
 				{
-					"name": "Submit Report",
-					"description": "Submit a report for a parking spot. Accepts JSON body with Content-Type: application/json. Also supports multipart/form-data with a \"report\" JSON part and optional \"images\" file parts (max 3 images, JPEG/PNG/WebP, 5MB each). The JSON-only endpoint still works.",
+					"name": "Submit Report (JSON)",
+					"description": "Submit a report for a parking spot with JSON body only (no images).",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -621,10 +769,28 @@
 					"response": []
 				},
 				{
-					"name": "Get Reports for Spot",
+					"name": "Submit Report (Multipart)",
+					"description": "Submit a report with images. Send multipart/form-data with a 'report' JSON part and optional 'images' file parts (max 3, JPEG/PNG/WebP, 5MB each).",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "report",
+									"value": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": false,\n\t\"note\": \"Plenty of space\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}",
+									"type": "text",
+									"contentType": "application/json"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "",
+									"description": "Image file (JPEG/PNG/WebP, max 5MB)"
+								}
+							]
+						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
 							"host": [
@@ -636,6 +802,37 @@
 								"spots",
 								"{{spotId}}",
 								"reports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reports for Spot",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
 							]
 						}
 					},
@@ -1186,7 +1383,103 @@
 					]
 				},
 				{
-					"name": "5. Create a parking spot",
+					"name": "5. Get my preferences",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/preferences",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"preferences"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get preferences returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Preferences has expected fields', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('freeOnly');",
+									"    pm.expect(jsonData).to.have.property('defaultSpotTypes');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "6. Update my preferences",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"defaultSpotTypes\": [\"STREET\"],\n\t\"defaultTrustLevels\": [\"HIGH\"],\n\t\"freeOnly\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/preferences",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"preferences"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Update preferences returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Preferences were updated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.freeOnly).to.be.true;",
+									"    pm.expect(jsonData.defaultSpotTypes).to.include('STREET');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "7. Create a parking spot",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1204,7 +1497,7 @@
 							"raw": "{\n\t\"name\": \"E2E Street Parking\",\n\t\"type\": \"STREET\",\n\t\"latitude\": -22.9068,\n\t\"longitude\": -43.1729,\n\t\"priceMin\": 5.0,\n\t\"priceMax\": 15.0,\n\t\"requiresBooking\": false,\n\t\"notes\": \"E2E test spot\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/spots",
+							"raw": "{{baseUrl}}/api/v1/spots?force=true",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -1212,6 +1505,12 @@
 								"api",
 								"v1",
 								"spots"
+							],
+							"query": [
+								{
+									"key": "force",
+									"value": "true"
+								}
 							]
 						}
 					},
@@ -1237,7 +1536,7 @@
 					]
 				},
 				{
-					"name": "6. Search spots by radius",
+					"name": "8. Search spots by radius",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1297,7 +1596,7 @@
 					]
 				},
 				{
-					"name": "7. Get spot by ID",
+					"name": "9. Get spot by ID",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1340,7 +1639,7 @@
 					]
 				},
 				{
-					"name": "8. Get my spots",
+					"name": "10. Get my spots",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1384,7 +1683,7 @@
 					]
 				},
 				{
-					"name": "9. Submit report for created spot",
+					"name": "11. Submit report for created spot",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1437,7 +1736,7 @@
 					]
 				},
 				{
-					"name": "10. Get reports for spot",
+					"name": "12. Get reports for spot",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1470,10 +1769,11 @@
 									"pm.test('Get reports returns 200', function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"pm.test('Reports contain submitted report', function () {",
+									"pm.test('Reports page contains submitted report', function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+									"    var content = jsonData.content || jsonData;",
+									"    pm.expect(content).to.be.an('array');",
+									"    pm.expect(content.length).to.be.greaterThan(0);",
 									"});"
 								]
 							}
@@ -1481,7 +1781,7 @@
 					]
 				},
 				{
-					"name": "11. Get spot summary",
+					"name": "13. Get spot summary",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1525,7 +1825,7 @@
 					]
 				},
 				{
-					"name": "12. Update the created spot",
+					"name": "14. Update the created spot",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -1578,7 +1878,7 @@
 					]
 				},
 				{
-					"name": "13. Add spot to favorites",
+					"name": "15. Add spot to favorites",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1617,7 +1917,7 @@
 					]
 				},
 				{
-					"name": "14. Get my favorites",
+					"name": "16. Get my favorites",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1675,7 +1975,7 @@
 					]
 				},
 				{
-					"name": "15. Remove from favorites",
+					"name": "17. Remove from favorites",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -1714,7 +2014,46 @@
 					]
 				},
 				{
-					"name": "16. Register second user",
+					"name": "18. Get spot analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/analytics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"analytics"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get spot analytics returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "19. Register second user",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -1784,7 +2123,7 @@
 					]
 				},
 				{
-					"name": "17. Submit report as second user",
+					"name": "20. Submit report as second user",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1845,7 +2184,7 @@
 					]
 				},
 				{
-					"name": "18. Request spot removal as second user",
+					"name": "21. Request spot removal as second user",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1906,7 +2245,54 @@
 					]
 				},
 				{
-					"name": "19. Register third user",
+					"name": "22. Get pending removals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get pending removals returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Pending removals contains our request', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+									"    var requestId = pm.collectionVariables.get('removalRequestId');",
+									"    var found = jsonData.some(function(r) { return r.id === requestId; });",
+									"    pm.expect(found).to.be.true;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "23. Register third user",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -1975,7 +2361,7 @@
 					]
 				},
 				{
-					"name": "20. Confirm removal as third user",
+					"name": "24. Confirm removal as third user",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2026,7 +2412,7 @@
 					]
 				},
 				{
-					"name": "21. Register fourth user",
+					"name": "25. Register fourth user",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -2095,7 +2481,7 @@
 					]
 				},
 				{
-					"name": "22. Confirm removal as fourth user",
+					"name": "26. Confirm removal as fourth user",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2146,7 +2532,7 @@
 					]
 				},
 				{
-					"name": "23. Register fifth user",
+					"name": "27. Register fifth user",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -2215,7 +2601,7 @@
 					]
 				},
 				{
-					"name": "24. Confirm removal as fifth user",
+					"name": "28. Confirm removal as fifth user",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2270,7 +2656,7 @@
 					]
 				},
 				{
-					"name": "25. Search spots - verify inactive not returned",
+					"name": "29. Search spots - verify inactive not returned",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -2328,7 +2714,7 @@
 					]
 				},
 				{
-					"name": "26. Change password",
+					"name": "30. Change password",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -2379,7 +2765,7 @@
 					]
 				},
 				{
-					"name": "27. Forgot Password",
+					"name": "31. Forgot Password",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -2428,7 +2814,7 @@
 					]
 				},
 				{
-					"name": "28. Get My Gamification",
+					"name": "32. Get My Gamification",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -2471,7 +2857,7 @@
 					]
 				},
 				{
-					"name": "29. Get Spot Analytics",
+					"name": "33. Get leaderboard",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -2481,16 +2867,24 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/analytics",
+							"raw": "{{baseUrl}}/api/v1/leaderboards?period=WEEKLY&category=MOST_POINTS",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"spots",
-								"{{spotId}}",
-								"analytics"
+								"leaderboards"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "WEEKLY"
+								},
+								{
+									"key": "category",
+									"value": "MOST_POINTS"
+								}
 							]
 						}
 					},
@@ -2501,7 +2895,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test('Get spot analytics returns 200', function () {",
+									"pm.test('Get leaderboard returns 200', function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
 								]

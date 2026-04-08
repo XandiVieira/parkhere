@@ -19,7 +19,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -103,5 +105,67 @@ class AdminControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.user(admin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User banned"));
+    }
+
+    @Test
+    void banUser_shouldReturn403ForNonAdmin() throws Exception {
+        var user = buildRegularUser();
+        var userId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/admin/users/" + userId + "/ban")
+                        .with(SecurityMockMvcRequestPostProcessors.user(user)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unbanUser_shouldReturn200ForAdmin() throws Exception {
+        var admin = buildAdminUser();
+        var userId = UUID.randomUUID();
+        when(localizedMessageService.translate(anyString())).thenReturn("User unbanned");
+
+        mockMvc.perform(put("/api/v1/admin/users/" + userId + "/unban")
+                        .with(SecurityMockMvcRequestPostProcessors.user(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User unbanned"));
+    }
+
+    @Test
+    void unbanUser_shouldReturn403ForNonAdmin() throws Exception {
+        var user = buildRegularUser();
+        var userId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/admin/users/" + userId + "/unban")
+                        .with(SecurityMockMvcRequestPostProcessors.user(user)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteReport_shouldReturn204ForAdmin() throws Exception {
+        var admin = buildAdminUser();
+        var reportId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/v1/admin/reports/" + reportId)
+                        .with(SecurityMockMvcRequestPostProcessors.user(admin)))
+                .andExpect(status().isNoContent());
+
+        verify(adminService).deleteReport(reportId);
+    }
+
+    @Test
+    void deleteReport_shouldReturn403ForNonAdmin() throws Exception {
+        var user = buildRegularUser();
+        var reportId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/v1/admin/reports/" + reportId)
+                        .with(SecurityMockMvcRequestPostProcessors.user(user)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deactivateSpot_shouldReturn401WhenUnauthenticated() throws Exception {
+        var spotId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/admin/spots/" + spotId + "/deactivate"))
+                .andExpect(status().isUnauthorized());
     }
 }

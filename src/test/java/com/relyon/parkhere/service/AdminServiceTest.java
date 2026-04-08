@@ -147,4 +147,28 @@ class AdminServiceTest {
         assertTrue(user.isActive());
         verify(userRepository).save(user);
     }
+
+    @Test
+    void deleteReport_shouldThrowWhenNotFound() {
+        var reportId = UUID.randomUUID();
+        when(parkingReportRepository.findById(reportId)).thenReturn(Optional.empty());
+
+        assertThrows(ReportNotFoundException.class, () -> adminService.deleteReport(reportId));
+    }
+
+    @Test
+    void banUser_shouldThrowWhenNotFound() {
+        var userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> adminService.banUser(userId));
+    }
+
+    @Test
+    void unbanUser_shouldThrowWhenNotFound() {
+        var userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> adminService.unbanUser(userId));
+    }
 }
