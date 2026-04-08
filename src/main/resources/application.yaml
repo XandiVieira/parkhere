@@ -44,7 +44,7 @@ parkhere:
   google:
     client-id: ${GOOGLE_CLIENT_ID:345298825311-1vpn0jdmbulhrfnhoor2incsnnlgmfs6.apps.googleusercontent.com}
   geocoding:
-    enabled: false
+    enabled: true
   analytics:
     enabled: true
     cron: "0 0 3 * * *"
