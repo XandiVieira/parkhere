@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-const GoogleLogin = dynamic(() => import("@react-oauth/google").then(mod => mod.GoogleLogin), { ssr: false });
+const GoogleLoginButton = dynamic(() => import("@/components/auth/GoogleLoginButton"), { ssr: false });
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { t } from "@/lib/i18n";
@@ -65,12 +65,9 @@ export default function LoginPage() {
 
         {/* Google Sign-In */}
         <div className="mb-4 flex justify-center">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
+          <GoogleLoginButton
+            onSuccess={(credential) => handleGoogleSuccess({ credential })}
             onError={() => setError("Falha ao entrar com Google")}
-            text="signin_with"
-            shape="rectangular"
-            width="350"
           />
         </div>
 
