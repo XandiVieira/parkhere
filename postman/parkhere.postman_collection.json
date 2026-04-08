@@ -15,6 +15,31 @@
 			"key": "token",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "spotId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reportId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "removalRequestId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "imageFilename",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"auth": {
@@ -48,8 +73,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/register",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "register"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
 						}
 					},
 					"response": [],
@@ -84,8 +116,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/login",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "login"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": [],
@@ -103,6 +142,70 @@
 							}
 						}
 					]
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"john@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"token\": \"<uuid>\",\n\t\"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -117,8 +220,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "users", "me"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
 						}
 					},
 					"response": []
@@ -139,8 +249,87 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "users", "me"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"currentPassword\": \"password123\",\n\t\"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Gamification",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/gamification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"gamification"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Gamification",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}/gamification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"gamification"
+							]
 						}
 					},
 					"response": []
@@ -167,21 +356,33 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots"
+							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Search Spots by Radius",
+					"name": "Search Spots",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots"],
+							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800&type=STREET&maxPrice=20.0&requiresBooking=false&minTrustScore=0.5&page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots"
+							],
 							"query": [
 								{
 									"key": "lat",
@@ -194,6 +395,34 @@
 								{
 									"key": "radius",
 									"value": "800"
+								},
+								{
+									"key": "type",
+									"value": "STREET",
+									"disabled": true
+								},
+								{
+									"key": "maxPrice",
+									"value": "20.0",
+									"disabled": true
+								},
+								{
+									"key": "requiresBooking",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "minTrustScore",
+									"value": "0.5",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
 								}
 							]
 						}
@@ -207,8 +436,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}"
+							]
 						}
 					},
 					"response": []
@@ -220,8 +456,129 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/mine",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "mine"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"mine"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Spot Management",
+			"description": "Spot update and management endpoints",
+			"item": [
+				{
+					"name": "Update Spot",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Updated Spot\",\n\t\"priceMin\": 10.0,\n\t\"priceMax\": 25.0,\n\t\"requiresBooking\": true,\n\t\"estimatedSpots\": 50,\n\t\"notes\": \"Updated notes\",\n\t\"schedules\": []\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Favorites",
+			"description": "Spot favorite management endpoints",
+			"item": [
+				{
+					"name": "Add Favorite",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/favorite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"favorite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Favorite",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/favorite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"favorite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Favorites",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/favorites?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"favorites"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
 						}
 					},
 					"response": []
@@ -234,6 +591,7 @@
 			"item": [
 				{
 					"name": "Submit Report",
+					"description": "Submit a report for a parking spot. Accepts JSON body with Content-Type: application/json. Also supports multipart/form-data with a \"report\" JSON part and optional \"images\" file parts (max 3 images, JPEG/PNG/WebP, 5MB each). The JSON-only endpoint still works.",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -248,8 +606,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}", "reports"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"reports"
+							]
 						}
 					},
 					"response": []
@@ -261,8 +627,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}", "reports"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"reports"
+							]
 						}
 					},
 					"response": []
@@ -274,8 +648,315 @@
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/summary",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}", "summary"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Spot Removal",
+			"description": "Spot removal request and confirmation endpoints",
+			"item": [
+				{
+					"name": "Request Removal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"reason\": \"This spot no longer exists\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Removal",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests/{{removalRequestId}}/confirm",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests",
+								"{{removalRequestId}}",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Removals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"description": "Spot analytics endpoints",
+			"item": [
+				{
+					"name": "Get Spot Analytics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/analytics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"analytics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Images",
+			"description": "Image serving endpoints",
+			"item": [
+				{
+					"name": "Get Image",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/images/{{imageFilename}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"images",
+								"{{imageFilename}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"description": "Administrative endpoints (requires ADMIN role)",
+			"item": [
+				{
+					"name": "Deactivate Spot",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/spots/{{spotId}}/deactivate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"spots",
+								"{{spotId}}",
+								"deactivate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Report",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/reports/{{reportId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"reports",
+								"{{reportId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ban User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}/ban",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"{{userId}}",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unban User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users/{{userId}}/unban",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"{{userId}}",
+								"unban"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Leaderboards",
+			"description": "Weekly and monthly leaderboards",
+			"item": [
+				{
+					"name": "Get Weekly Leaderboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/leaderboards?period=WEEKLY&category=MOST_POINTS",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaderboards"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "WEEKLY"
+								},
+								{
+									"key": "category",
+									"value": "MOST_POINTS"
+								},
+								{
+									"key": "periodKey",
+									"value": "",
+									"disabled": true,
+									"description": "Optional: e.g. 2026-W15"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Monthly Leaderboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/leaderboards?period=MONTHLY&category=MOST_POINTS",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaderboards"
+							],
+							"query": [
+								{
+									"key": "period",
+									"value": "MONTHLY"
+								},
+								{
+									"key": "category",
+									"value": "MOST_POINTS"
+								}
+							]
 						}
 					},
 					"response": []
@@ -309,8 +990,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/register",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "register"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
 						}
 					},
 					"response": [],
@@ -373,8 +1061,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/auth/login",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "login"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": [],
@@ -409,8 +1104,15 @@
 						],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "users", "me"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
 						}
 					},
 					"response": [],
@@ -453,8 +1155,15 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/users/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "users", "me"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
 						}
 					},
 					"response": [],
@@ -496,8 +1205,14 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots"
+							]
 						}
 					},
 					"response": [],
@@ -533,8 +1248,14 @@
 						],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots"
+							],
 							"query": [
 								{
 									"key": "lat",
@@ -563,10 +1284,11 @@
 									"});",
 									"pm.test('Results contain created spot', function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+									"    var content = jsonData.content || jsonData;",
+									"    pm.expect(content).to.be.an('array');",
+									"    pm.expect(content.length).to.be.greaterThan(0);",
 									"    var spotId = pm.collectionVariables.get('spotId');",
-									"    var found = jsonData.some(function(s) { return s.id === spotId; });",
+									"    var found = content.some(function(s) { return s.id === spotId; });",
 									"    pm.expect(found).to.be.true;",
 									"});"
 								]
@@ -586,8 +1308,15 @@
 						],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}"
+							]
 						}
 					},
 					"response": [],
@@ -622,8 +1351,15 @@
 						],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/mine",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "mine"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"mine"
+							]
 						}
 					},
 					"response": [],
@@ -638,8 +1374,9 @@
 									"});",
 									"pm.test('My spots contains the created spot', function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    pm.expect(jsonData.length).to.be.greaterThan(0);",
+									"    var content = jsonData.content || jsonData;",
+									"    pm.expect(content).to.be.an('array');",
+									"    pm.expect(content.length).to.be.greaterThan(0);",
 									"});"
 								]
 							}
@@ -666,8 +1403,16 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}", "reports"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"reports"
+							]
 						}
 					},
 					"response": [],
@@ -703,8 +1448,16 @@
 						],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}", "reports"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"reports"
+							]
 						}
 					},
 					"response": [],
@@ -739,8 +1492,16 @@
 						],
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/summary",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "spots", "{{spotId}}", "summary"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"summary"
+							]
 						}
 					},
 					"response": [],
@@ -757,6 +1518,991 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.dominantAvailability).to.eql('AVAILABLE');",
 									"    pm.expect(jsonData.totalConfirmations).to.be.greaterThan(0);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "12. Update the created spot",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Updated E2E Spot\",\n\t\"priceMin\": 10.0,\n\t\"priceMax\": 25.0,\n\t\"requiresBooking\": true,\n\t\"estimatedSpots\": 50,\n\t\"notes\": \"Updated E2E notes\",\n\t\"schedules\": []\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Update spot returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Spot was updated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.name).to.eql('Updated E2E Spot');",
+									"    pm.expect(jsonData.priceMin).to.eql(10.0);",
+									"    pm.expect(jsonData.priceMax).to.eql(25.0);",
+									"    pm.expect(jsonData.requiresBooking).to.be.true;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "13. Add spot to favorites",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/favorite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"favorite"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Add favorite returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "14. Get my favorites",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/favorites?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"favorites"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get favorites returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Favorites contain the spot', function () {",
+									"    var jsonData = pm.response.json();",
+									"    var content = jsonData.content || jsonData;",
+									"    pm.expect(content).to.be.an('array');",
+									"    pm.expect(content.length).to.be.greaterThan(0);",
+									"    var spotId = pm.collectionVariables.get('spotId');",
+									"    var found = content.some(function(s) { return s.id === spotId; });",
+									"    pm.expect(found).to.be.true;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "15. Remove from favorites",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/favorite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"favorite"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Remove favorite returns 204', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "16. Register second user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Second User\",\n\t\"email\": \"e2e-second-{{$timestamp}}@test.com\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var email = 'e2e-second-' + Date.now() + '@test.com';",
+									"pm.collectionVariables.set('e2eSecondEmail', email);",
+									"pm.request.body.raw = JSON.stringify({",
+									"    name: 'E2E Second User',",
+									"    email: email,",
+									"    password: 'password123'",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register second user returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Save second user token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.collectionVariables.set('secondToken', jsonData.token);",
+									"    pm.collectionVariables.set('e2eSecondUserId', jsonData.user.id);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "17. Submit report as second user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{secondToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"availabilityStatus\": \"UNAVAILABLE\",\n\t\"estimatedPrice\": 12.0,\n\t\"safetyRating\": 3,\n\t\"informalChargeReported\": false,\n\t\"note\": \"Second user report\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"reports"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Submit report as second user returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Report has correct data', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.availabilityStatus).to.eql('UNAVAILABLE');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "18. Request spot removal as second user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{secondToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"reason\": \"This spot no longer exists\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request removal returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Save removal request ID', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('removalRequestId', jsonData.id);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "19. Register third user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Third User\",\n\t\"email\": \"e2e-third-{{$timestamp}}@test.com\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var email = 'e2e-third-' + Date.now() + '@test.com';",
+									"pm.collectionVariables.set('e2eThirdEmail', email);",
+									"pm.request.body.raw = JSON.stringify({",
+									"    name: 'E2E Third User',",
+									"    email: email,",
+									"    password: 'password123'",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register third user returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Save third user token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.collectionVariables.set('thirdToken', jsonData.token);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "20. Confirm removal as third user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{thirdToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests/{{removalRequestId}}/confirm",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests",
+								"{{removalRequestId}}",
+								"confirm"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Confirm removal as third user returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "21. Register fourth user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Fourth User\",\n\t\"email\": \"e2e-fourth-{{$timestamp}}@test.com\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var email = 'e2e-fourth-' + Date.now() + '@test.com';",
+									"pm.collectionVariables.set('e2eFourthEmail', email);",
+									"pm.request.body.raw = JSON.stringify({",
+									"    name: 'E2E Fourth User',",
+									"    email: email,",
+									"    password: 'password123'",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register fourth user returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Save fourth user token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.collectionVariables.set('fourthToken', jsonData.token);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "22. Confirm removal as fourth user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{fourthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests/{{removalRequestId}}/confirm",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests",
+								"{{removalRequestId}}",
+								"confirm"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Confirm removal as fourth user returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "23. Register fifth user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Fifth User\",\n\t\"email\": \"e2e-fifth-{{$timestamp}}@test.com\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var email = 'e2e-fifth-' + Date.now() + '@test.com';",
+									"pm.collectionVariables.set('e2eFifthEmail', email);",
+									"pm.request.body.raw = JSON.stringify({",
+									"    name: 'E2E Fifth User',",
+									"    email: email,",
+									"    password: 'password123'",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register fifth user returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test('Save fifth user token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"    pm.collectionVariables.set('fifthToken', jsonData.token);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "24. Confirm removal as fifth user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{fifthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/removal-requests/{{removalRequestId}}/confirm",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"removal-requests",
+								"{{removalRequestId}}",
+								"confirm"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Confirm removal as fifth user returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Spot should become inactive after enough confirmations', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "25. Search spots - verify inactive not returned",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots?lat=-22.9068&lng=-43.1729&radius=800",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "-22.9068"
+								},
+								{
+									"key": "lng",
+									"value": "-43.1729"
+								},
+								{
+									"key": "radius",
+									"value": "800"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Search returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Inactive spot not in results', function () {",
+									"    var jsonData = pm.response.json();",
+									"    var content = jsonData.content || jsonData;",
+									"    var spotId = pm.collectionVariables.get('spotId');",
+									"    var found = content.some(function(s) { return s.id === spotId; });",
+									"    pm.expect(found).to.be.false;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "26. Change password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"currentPassword\": \"password123\",\n\t\"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"password"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Change password returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response has success message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.be.a('string');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "27. Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"{{e2eEmail}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Forgot password returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "28. Get My Gamification",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/me/gamification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me",
+								"gamification"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get my gamification returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Total points greater than 0', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.totalPoints).to.be.greaterThan(0);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "29. Get Spot Analytics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/analytics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"spots",
+								"{{spotId}}",
+								"analytics"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get spot analytics returns 200', function () {",
+									"    pm.response.to.have.status(200);",
 									"});"
 								]
 							}

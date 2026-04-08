@@ -56,6 +56,13 @@ public class ParkingSpot extends BaseEntity {
 
     private LocalDateTime lastConfirmedAt;
 
+    @Column(length = 500)
+    private String address;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
     @OneToMany(mappedBy = "parkingSpot", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ParkingSpotSchedule> schedules = new ArrayList<>();

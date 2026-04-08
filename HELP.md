@@ -47,7 +47,18 @@ but street parking, informal spots, and everything in between. Think "Waze for p
 - [x] Search spots by radius (geospatial)
 - [x] Submit confirmation/report on a spot
 - [x] Spot detail view with aggregated info (summary endpoint)
-- [ ] Trust score calculation (basic version)
+- [x] Trust score calculation (5-factor weighted algorithm)
+- [x] User reputation system
+- [x] Information decay (scheduled job)
+- [x] Spot update endpoint (creator only)
+- [x] Community-driven spot removal (3-confirmation threshold)
+- [x] Search filters + pagination
+- [x] Abuse/spam detection (30-min cooldown)
+- [x] Report weighting by reputation
+- [x] Favorites/bookmarks
+- [x] Password change
+- [x] Admin endpoints (deactivate spots, delete reports, ban/unban users)
+- [x] Soft delete for spots
 
 ### NOT in MVP
 - Reservations, payments, navigation, ML predictions, camera recognition, complex gamification
@@ -113,3 +124,196 @@ Focus on **bars/nightlife areas** or **hospitals/clinics** for cold-start — hi
   - ParkingReportController: POST /api/v1/spots/{id}/reports, GET .../reports, GET .../summary
   - Flyway migration V3: parking_reports table with indexes
   - 51 total tests (12 new for reports)
+
+### Session 2 (2026-04-06)
+
+Major feature expansion — all high and medium priority backend features implemented.
+
+- **Soft Delete Infrastructure:**
+  - Added `active` boolean to ParkingSpot (migration V6)
+  - All queries filter by active=true — inactive spots hidden from search, reports, details
+  - TrustLevel enum (HIGH/MEDIUM/LOW/NO_DATA) added to SpotResponse and SpotSummaryResponse
+
+- **Trust Score Calculation (TrustScoreService):**
+  - 5-factor weighted algorithm (0.0-1.0 score) over 72h report window:
+    - Confirmation volume (0.25 weight) — saturates at 10 reports
+    - Recency (0.20) — exponential decay, 12h half-life
+    - User diversity (0.20) — saturates at 5 distinct users
+    - Consistency (0.20) — agreement ratio on availability status
+    - GPS proximity (0.15) — reports within 500m, closer = higher
+  - Recalculated after every new report submission
+
+- **User Reputation System (ReputationService):**
+  - 0.0-100.0 score from 4 components:
+    - Report count (40pts max, 0.5 pts/report)
+    - GPS proximity (30pts max, avg proximity factor)
+    - Consistency (20pts max, agreement with dominant status)
+    - Account age (10pts max, 300 days to max)
+  - Recalculated after every report
+
+- **Trust Score Decay Job (TrustScoreDecayJob):**
+  - @Scheduled hourly cron job
+  - Recalculates trust for active spots with score > 0
+  - Configurable via `parkhere.decay.cron` and `parkhere.decay.enabled`
+  - Disabled in test profile
+
+- **Spot Update Endpoint:**
+  - PUT /api/v1/spots/{id} — only creator can update
+  - Updatable: name, prices, booking, estimated spots, notes, schedules
+  - Immutable: location, type
+  - UnauthorizedSpotModificationException (403) if non-creator attempts
+
+- **Abuse/Spam Detection:**
+  - 30-minute cooldown per user per spot
+  - ReportCooldownException (429) when violated
+
+- **Report Weighting by Reputation:**
+  - Summary aggregation weighted by user reputation
+  - Weight formula: 1.0 + (reputationScore / 100.0)
+  - Applied to: dominant availability, avg price, avg safety
+
+- **Search Filters + Pagination:**
+  - Custom repository (ParkingSpotRepositoryCustomImpl) with dynamic native SQL
+  - Optional filters: type, maxPrice, requiresBooking, minTrustScore
+  - Pagination (page/size) on: search, getMySpots, getReportsForSpot, getFavorites
+
+- **Community-Driven Spot Removal:**
+  - Any user can request removal (POST /spots/{id}/removal-requests)
+  - Other users confirm (POST .../confirm) — can't confirm own request
+  - After 3 confirmations: spot deactivated (active=false)
+  - Entities: SpotRemovalRequest, SpotRemovalConfirmation
+  - Migration V7: two new tables with indexes
+
+- **Favorites/Bookmarks:**
+  - POST /spots/{id}/favorite, DELETE /spots/{id}/favorite, GET /users/me/favorites
+  - UserFavorite entity, migration V8
+  - Paginated favorites list
+
+- **Password Change:**
+  - PUT /users/me/password — verifies current password, encodes new one
+
+- **Admin Endpoints:**
+  - PUT /admin/spots/{id}/deactivate, DELETE /admin/reports/{id}
+  - PUT /admin/users/{id}/ban, PUT /admin/users/{id}/unban
+  - Role-based access: ADMIN role required
+  - SecurityConfig updated with hasRole("ADMIN")
+
+- **Test coverage:** 51 → 101 tests (50 new)
+- **Migrations:** V6 (active flag), V7 (removal system), V8 (favorites)
+- **i18n:** 17 new message keys in EN and PT
+
+### Session 3 (2026-04-07)
+
+Five remaining features implemented:
+
+- **Password Reset (Forgot Password):**
+  - Spring Mail + SMTP integration
+  - Token-based flow: request reset -> email with token link -> validate token + new password
+  - 1-hour token expiry, single-use, no email enumeration
+  - POST /auth/forgot-password, POST /auth/reset-password (public)
+  - PasswordResetToken entity, migration V9
+
+- **Reverse Geocoding (Nominatim):**
+  - Interface-based design (GeocodingService interface, NominatimGeocodingService impl)
+  - Converts lat/lng to human-readable address on spot creation
+  - address field on ParkingSpot + SpotResponse + SpotSummaryResponse
+  - @ConditionalOnProperty for easy swap to Google Maps in prod
+  - Migration V10
+
+- **Gamification System (fully implemented from design):**
+  - Points: +5 per report, +3 GPS bonus (<100m), +1-7 streak bonus
+  - 10 badges (FIRST_STEPS through COMMUNITY_GUARDIAN) with bonus points
+  - Streak tracking (consecutive days, longest streak)
+  - GamificationService hooks into report submission + spot creation
+  - Popular spot bonus (+10) when spot reaches 10 confirmations
+  - GET /users/me/gamification, GET /users/{id}/gamification
+  - Entities: UserPoints, UserBadge, UserStreak. Migration V11
+
+- **SpotAnalytics (Precomputed Heatmap):**
+  - Aggregated parking patterns by day-of-week and hour (0-23)
+  - Availability rate, avg price, avg safety, informal charge rate per time bucket
+  - Daily 3 AM scheduled job recomputes for all active spots
+  - GET /spots/{spotId}/analytics — returns heatmap-style data
+  - SpotAnalytics entity, migration V12
+
+- **Image Attachments on Reports:**
+  - Interface-based storage (ImageStorageService, LocalImageStorageService)
+  - Up to 3 images per report, max 5MB each, JPEG/PNG/WebP only
+  - Report endpoint now supports both multipart (with images) and JSON (without)
+  - GET /images/{filename} (public) serves stored images
+  - ReportImage entity, migration V13
+  - Ready for S3 swap in production
+
+- **Dependencies added:** spring-boot-starter-mail
+- **Test coverage:** 112 -> 139 tests (27 new)
+- **Migrations:** V9 (reset tokens), V10 (address), V11 (gamification), V12 (analytics), V13 (images)
+- **i18n:** 12 new message keys in EN and PT
+- **Prod notes:** Image storage (local) and geocoding (Nominatim) designed as interfaces for easy swap to S3 and Google Maps
+
+## Gamification System (Implemented)
+
+### Points System
+- Submit a report: +5 points
+- GPS-verified report (within 100m): +3 bonus points
+- Report that aligns with majority: +2 points
+- Create a spot that gets 10+ confirmations: +10 points
+- First to report a new spot's status each day: +3 points
+- Streak bonus: +1 point per consecutive day with a report (caps at +7)
+
+### Badges
+| Badge | Requirement | Points Bonus |
+|-------|------------|-------------|
+| First Steps | Submit first report | 0 |
+| Regular | 10 reports submitted | 5 |
+| Veteran | 50 reports submitted | 20 |
+| Centurion | 100 reports submitted | 50 |
+| Spot Discoverer | Create first spot | 0 |
+| Cartographer | Create 10 spots | 10 |
+| Reliable | 20 consecutive accurate reports | 15 |
+| Night Owl | 10 reports between 22:00-06:00 | 5 |
+| Early Bird | 10 reports between 06:00-09:00 | 5 |
+| Community Guardian | Participate in 5 removal confirmations | 10 |
+
+### Streaks
+- Track consecutive days with at least one report
+- Streak milestones: 3 days, 7 days, 14 days, 30 days
+- Breaking a streak resets counter to 0
+- Streak displayed on user profile
+
+### Leaderboards
+- Weekly leaderboard by area (geohash-based regions)
+- Monthly global leaderboard
+- Categories: Most Reports, Highest Accuracy, Longest Streak
+- Top 10 displayed per category
+
+### Session 4 (2026-04-07)
+
+Four API maturity features implemented:
+
+- **Leaderboards (fully implemented):**
+  - Weekly and monthly leaderboards with categories: MOST_POINTS, LONGEST_STREAK
+  - LeaderboardEntry entity, migration V14
+  - LeaderboardJob: weekly (Monday 1 AM), monthly (1st 2 AM) — computes leaderboards then resets points
+  - GET /api/v1/leaderboards?period=WEEKLY&category=MOST_POINTS
+  - Point reset: weeklyPoints zeroed every Monday, monthlyPoints every 1st
+
+- **OpenAPI/Swagger Documentation:**
+  - springdoc-openapi-starter-webmvc-ui integrated
+  - /swagger-ui accessible without auth
+  - All controllers tagged (@Tag) for organized API docs
+  - JWT security scheme defined
+
+- **Rate Limiting (Bucket4j):**
+  - Per-user rate limiting: 100 requests/minute (configurable)
+  - Keyed by JWT token prefix or IP for unauthenticated requests
+  - Skips /swagger-ui, /v3/api-docs, /images endpoints
+  - Returns 429 when exceeded
+
+- **Search by Name/Address:**
+  - `query` parameter added to GET /api/v1/spots search
+  - ILIKE search on name and address columns (case-insensitive, partial match)
+  - No migration needed — uses existing columns
+
+- **Dependencies added:** springdoc-openapi-starter-webmvc-ui 2.8.6, bucket4j_jdk17-core 8.14.0
+- **Test coverage:** 139 -> 148 tests
+- **Migration:** V14 (leaderboard_entries)

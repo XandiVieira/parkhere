@@ -3,13 +3,17 @@ package com.relyon.parkhere.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.relyon.parkhere.config.SecurityConfig;
 import com.relyon.parkhere.dto.request.CreateSpotRequest;
+import com.relyon.parkhere.dto.request.UpdateSpotRequest;
+import com.relyon.parkhere.exception.UnauthorizedSpotModificationException;
 import com.relyon.parkhere.dto.response.SpotResponse;
 import com.relyon.parkhere.exception.SpotNotFoundException;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.model.enums.SpotType;
+import com.relyon.parkhere.model.enums.TrustLevel;
 import com.relyon.parkhere.security.JwtService;
 import com.relyon.parkhere.service.LocalizedMessageService;
+import com.relyon.parkhere.service.FavoriteService;
 import com.relyon.parkhere.service.ParkingSpotService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -32,6 +39,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,6 +54,9 @@ class ParkingSpotControllerTest {
 
     @MockitoBean
     private ParkingSpotService parkingSpotService;
+
+    @MockitoBean
+    private FavoriteService favoriteService;
 
     @MockitoBean
     private JwtService jwtService;
@@ -73,7 +84,7 @@ class ParkingSpotControllerTest {
         return new SpotResponse(
                 UUID.randomUUID(), "Test Spot", SpotType.STREET,
                 -22.9068, -43.1729, 5.0, 15.0, false, null, null,
-                0.0, 0, null, List.of(),
+                0.0, TrustLevel.NO_DATA, 0, null, null, List.of(),
                 createdBy, LocalDateTime.now()
         );
     }
@@ -120,8 +131,9 @@ class ParkingSpotControllerTest {
     void search_shouldReturn200WithResults() throws Exception {
         var user = buildUser();
         var response = sampleSpotResponse(user.getId());
-        when(parkingSpotService.searchByRadius(-22.9068, -43.1729, 800.0))
-                .thenReturn(List.of(response));
+        var pageResult = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+        when(parkingSpotService.searchWithFilters(eq(-22.9068), eq(-43.1729), eq(800.0),
+                any(), any(), any(), any(), any(), any())).thenReturn(pageResult);
 
         mockMvc.perform(get("/api/v1/spots")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
@@ -129,21 +141,22 @@ class ParkingSpotControllerTest {
                         .param("lng", "-43.1729")
                         .param("radius", "800"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Test Spot"));
+                .andExpect(jsonPath("$.content[0].name").value("Test Spot"));
     }
 
     @Test
     void search_shouldUseDefaultRadius() throws Exception {
         var user = buildUser();
-        when(parkingSpotService.searchByRadius(-22.9068, -43.1729, 800.0))
-                .thenReturn(List.of());
+        var pageResult = new PageImpl<SpotResponse>(List.of(), PageRequest.of(0, 20), 0);
+        when(parkingSpotService.searchWithFilters(eq(-22.9068), eq(-43.1729), eq(800.0),
+                any(), any(), any(), any(), any(), any())).thenReturn(pageResult);
 
         mockMvc.perform(get("/api/v1/spots")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
                         .param("lat", "-22.9068")
                         .param("lng", "-43.1729"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$.content").isArray());
     }
 
     @Test
@@ -175,11 +188,51 @@ class ParkingSpotControllerTest {
     void getMySpots_shouldReturn200() throws Exception {
         var user = buildUser();
         var response = sampleSpotResponse(user.getId());
-        when(parkingSpotService.getByUser(user.getId())).thenReturn(List.of(response));
+        var pageResult = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+        when(parkingSpotService.getByUser(eq(user.getId()), any())).thenReturn(pageResult);
 
         mockMvc.perform(get("/api/v1/spots/mine")
                         .with(SecurityMockMvcRequestPostProcessors.user(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Test Spot"));
+                .andExpect(jsonPath("$.content[0].name").value("Test Spot"));
+    }
+
+    @Test
+    void update_shouldReturn200() throws Exception {
+        var user = buildUser();
+        var spotId = UUID.randomUUID();
+        var request = new UpdateSpotRequest("Updated Spot", 10.0, 25.0, true, 50, "notes", null);
+        var response = new SpotResponse(
+                spotId, "Updated Spot", SpotType.STREET,
+                -22.9068, -43.1729, 10.0, 25.0, true, 50, "notes",
+                0.0, TrustLevel.NO_DATA, 0, null, null, List.of(),
+                user.getId(), LocalDateTime.now()
+        );
+        when(parkingSpotService.update(eq(spotId), any(UpdateSpotRequest.class), any(User.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/spots/" + spotId)
+                        .with(SecurityMockMvcRequestPostProcessors.user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Spot"))
+                .andExpect(jsonPath("$.priceMin").value(10.0));
+    }
+
+    @Test
+    void update_shouldReturn403WhenNotCreator() throws Exception {
+        var user = buildUser();
+        var spotId = UUID.randomUUID();
+        var request = new UpdateSpotRequest("Hacked", 0.0, 0.0, false, null, null, null);
+        when(parkingSpotService.update(eq(spotId), any(UpdateSpotRequest.class), any(User.class)))
+                .thenThrow(new UnauthorizedSpotModificationException());
+        when(localizedMessageService.translate(any(UnauthorizedSpotModificationException.class)))
+                .thenReturn("Only the creator can update this parking spot");
+
+        mockMvc.perform(put("/api/v1/spots/" + spotId)
+                        .with(SecurityMockMvcRequestPostProcessors.user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 }

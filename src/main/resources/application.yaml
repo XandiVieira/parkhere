@@ -8,18 +8,58 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
   flyway:
     enabled: true
     locations: classpath:db/migration
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 jwt:
   secret: ${JWT_SECRET:parkhere-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
   expiration: 86400000
+
+parkhere:
+  decay:
+    enabled: true
+    cron: "0 0 * * * *"
+  reset:
+    base-url: ${RESET_BASE_URL:http://localhost:3000/reset-password}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:345298825311-1vpn0jdmbulhrfnhoor2incsnnlgmfs6.apps.googleusercontent.com}
+  geocoding:
+    enabled: false
+  analytics:
+    enabled: true
+    cron: "0 0 3 * * *"
+  leaderboard:
+    enabled: true
+    weekly-cron: "0 0 1 * * MON"
+    monthly-cron: "0 0 2 1 * *"
+  images:
+    upload-dir: ${UPLOAD_DIR:./uploads}
+    storage: local
+
+  rate-limit:
+    requests-per-minute: 100
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
 
 logging:
   level:

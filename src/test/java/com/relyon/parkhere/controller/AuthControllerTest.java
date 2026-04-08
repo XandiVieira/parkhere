@@ -11,6 +11,7 @@ import com.relyon.parkhere.exception.InvalidCredentialsException;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.security.JwtService;
 import com.relyon.parkhere.service.LocalizedMessageService;
+import com.relyon.parkhere.service.PasswordResetService;
 import com.relyon.parkhere.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,12 @@ class AuthControllerTest {
     private UserService userService;
 
     @MockitoBean
+    private PasswordResetService passwordResetService;
+
+    @MockitoBean
+    private com.relyon.parkhere.service.GoogleAuthService googleAuthService;
+
+    @MockitoBean
     private JwtService jwtService;
 
     @MockitoBean
@@ -52,7 +59,7 @@ class AuthControllerTest {
     private LocalizedMessageService localizedMessageService;
 
     private UserResponse sampleUserResponse() {
-        return new UserResponse(UUID.randomUUID(), "John", "john@test.com", Role.USER, 0.0, LocalDateTime.now());
+        return new UserResponse(UUID.randomUUID(), "John", null, "john@test.com", Role.USER, 0.0, null, LocalDateTime.now());
     }
 
     @Test
@@ -112,5 +119,35 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void forgotPassword_shouldReturn200Always() throws Exception {
+        when(localizedMessageService.translate("reset.email.sent")).thenReturn("If this email is registered, a reset link has been sent");
+
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"john@test.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void forgotPassword_shouldReturn400ForInvalidEmail() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"not-an-email\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void resetPassword_shouldReturn200OnSuccess() throws Exception {
+        when(localizedMessageService.translate("reset.password.success")).thenReturn("Password has been reset");
+
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\": \"" + UUID.randomUUID() + "\", \"newPassword\": \"newPassword123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").exists());
     }
 }

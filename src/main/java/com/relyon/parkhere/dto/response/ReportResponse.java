@@ -4,6 +4,7 @@ import com.relyon.parkhere.model.ParkingReport;
 import com.relyon.parkhere.model.enums.AvailabilityStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record ReportResponse(
@@ -16,6 +17,7 @@ public record ReportResponse(
         boolean informalChargeReported,
         String note,
         double gpsDistanceMeters,
+        List<ReportImageResponse> images,
         LocalDateTime createdAt
 ) {
     public static ReportResponse from(ParkingReport report) {
@@ -29,6 +31,9 @@ public record ReportResponse(
                 report.isInformalChargeReported(),
                 report.getNote(),
                 report.getGpsDistanceMeters(),
+                report.getImages() != null
+                        ? report.getImages().stream().map(ReportImageResponse::from).toList()
+                        : List.of(),
                 report.getCreatedAt()
         );
     }

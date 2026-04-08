@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "parking_reports")
 @Getter
@@ -38,4 +41,8 @@ public class ParkingReport extends BaseEntity {
 
     @Column(nullable = false)
     private double gpsDistanceMeters;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ReportImage> images = new ArrayList<>();
 }

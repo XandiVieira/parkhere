@@ -3,17 +3,25 @@ package com.relyon.parkhere.service;
 import com.relyon.parkhere.dto.request.CreateReportRequest;
 import com.relyon.parkhere.dto.response.ReportResponse;
 import com.relyon.parkhere.dto.response.SpotSummaryResponse;
+import com.relyon.parkhere.exception.ReportCooldownException;
 import com.relyon.parkhere.exception.SpotNotFoundException;
+import com.relyon.parkhere.exception.TooManyImagesException;
 import com.relyon.parkhere.model.ParkingReport;
 import com.relyon.parkhere.model.ParkingSpot;
+import com.relyon.parkhere.model.ReportImage;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.AvailabilityStatus;
+import com.relyon.parkhere.model.enums.TrustLevel;
 import com.relyon.parkhere.repository.ParkingReportRepository;
 import com.relyon.parkhere.repository.ParkingSpotRepository;
+import com.relyon.parkhere.repository.ReportImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,10 +37,26 @@ public class ParkingReportService {
 
     private final ParkingReportRepository reportRepository;
     private final ParkingSpotRepository spotRepository;
+    private final TrustScoreService trustScoreService;
+    private final ReputationService reputationService;
+    private final GamificationService gamificationService;
+    private final List<ImageStorageService> imageStorageServices;
+    private final ReportImageRepository reportImageRepository;
+
+    static final int MAX_IMAGES_PER_REPORT = 3;
+
+    static final int COOLDOWN_MINUTES = 30;
 
     @Transactional
-    public ReportResponse submitReport(UUID spotId, CreateReportRequest request, User user) {
+    public ReportResponse submitReport(UUID spotId, CreateReportRequest request, User user, List<MultipartFile> images) {
         var spot = findSpotOrThrow(spotId);
+
+        var cooldownStart = LocalDateTime.now().minusMinutes(COOLDOWN_MINUTES);
+        if (reportRepository.existsByParkingSpotIdAndUserIdAndCreatedAtAfter(spotId, user.getId(), cooldownStart)) {
+            log.warn("Report cooldown active for user {} on spot {}", user.getEmail(), spotId);
+            throw new ReportCooldownException();
+        }
+
         var distance = calculateDistance(
                 request.userLatitude(), request.userLongitude(),
                 spot.getLocation().getY(), spot.getLocation().getX()
@@ -53,46 +77,59 @@ public class ParkingReportService {
 
         spot.setTotalConfirmations(spot.getTotalConfirmations() + 1);
         spot.setLastConfirmedAt(LocalDateTime.now());
-        spotRepository.save(spot);
+
+        trustScoreService.recalculate(spot);
+        reputationService.recalculate(user);
+        gamificationService.awardPointsForReport(user, saved);
+
+        if (spot.getTotalConfirmations() == 10) {
+            gamificationService.awardPointsForPopularSpot(spot.getCreatedBy());
+        }
+
+        if (images != null && !images.isEmpty()) {
+            if (images.size() > MAX_IMAGES_PER_REPORT) {
+                throw new TooManyImagesException();
+            }
+            if (!imageStorageServices.isEmpty()) {
+                var storage = imageStorageServices.getFirst();
+                for (var image : images) {
+                    var filename = storage.store(image);
+                    var reportImage = ReportImage.builder()
+                            .report(saved)
+                            .filename(filename)
+                            .originalFilename(image.getOriginalFilename())
+                            .contentType(image.getContentType())
+                            .sizeBytes(image.getSize())
+                            .build();
+                    reportImageRepository.save(reportImage);
+                    saved.getImages().add(reportImage);
+                }
+            }
+        }
 
         log.info("Report submitted for spot {} by user {} (distance: {}m)", spotId, user.getEmail(), (int) distance);
         return ReportResponse.from(saved);
     }
 
-    public List<ReportResponse> getReportsForSpot(UUID spotId) {
+    @Transactional(readOnly = true)
+    public Page<ReportResponse> getReportsForSpot(UUID spotId, Pageable pageable) {
         findSpotOrThrow(spotId);
-        return reportRepository.findByParkingSpotIdOrderByCreatedAtDesc(spotId).stream()
-                .map(ReportResponse::from)
-                .toList();
+        return reportRepository.findByParkingSpotIdOrderByCreatedAtDesc(spotId, pageable)
+                .map(ReportResponse::from);
     }
 
+    @Transactional(readOnly = true)
     public SpotSummaryResponse getSummary(UUID spotId) {
         var spot = findSpotOrThrow(spotId);
         var recentReports = reportRepository.findByParkingSpotIdAndCreatedAtAfterOrderByCreatedAtDesc(
                 spotId, LocalDateTime.now().minusHours(24)
         );
 
-        var dominantAvailability = recentReports.stream()
-                .map(ParkingReport::getAvailabilityStatus)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(AvailabilityStatus.UNKNOWN);
+        var dominantAvailability = calculateWeightedDominantAvailability(recentReports);
 
-        var avgPrice = recentReports.stream()
-                .map(ParkingReport::getEstimatedPrice)
-                .filter(p -> p != null)
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
+        var avgPrice = calculateWeightedAveragePrice(recentReports);
 
-        var avgSafety = recentReports.stream()
-                .map(ParkingReport::getSafetyRating)
-                .filter(r -> r != null)
-                .mapToInt(Integer::intValue)
-                .average()
-                .orElse(0.0);
+        var avgSafety = calculateWeightedAverageSafety(recentReports);
 
         var informalChargeCount = recentReports.stream()
                 .filter(ParkingReport::isInformalChargeReported)
@@ -105,6 +142,12 @@ public class ParkingReportService {
         var informalChargeRecently = recentReports.stream()
                 .anyMatch(r -> r.isInformalChargeReported() && r.getCreatedAt().isAfter(twoHoursAgo));
 
+        var availableCount = recentReports.stream()
+                .filter(r -> r.getAvailabilityStatus() == AvailabilityStatus.AVAILABLE)
+                .count();
+        var availabilityRate = recentReports.isEmpty() ? 0.0
+                : (double) availableCount / recentReports.size();
+
         var lastReportAt = recentReports.stream()
                 .findFirst()
                 .map(ParkingReport::getCreatedAt)
@@ -115,17 +158,61 @@ public class ParkingReportService {
                 spot.getLocation().getY(), spot.getLocation().getX(),
                 spot.getPriceMin(), spot.getPriceMax(),
                 spot.isRequiresBooking(),
-                spot.getTrustScore(), spot.getTotalConfirmations(),
+                spot.getAddress(),
+                spot.getTrustScore(), TrustLevel.fromScore(spot.getTrustScore()),
+                spot.getTotalConfirmations(),
                 spot.getLastConfirmedAt(),
                 dominantAvailability,
-                avgPrice > 0 ? avgPrice : null,
-                avgSafety > 0 ? avgSafety : null,
-                informalPercentage, informalChargeRecently, lastReportAt
+                avgPrice,
+                avgSafety,
+                informalPercentage, informalChargeRecently, availabilityRate, lastReportAt
         );
     }
 
+    static double getReputationWeight(ParkingReport report) {
+        return 1.0 + (report.getUser().getReputationScore() / 100.0);
+    }
+
+    private AvailabilityStatus calculateWeightedDominantAvailability(List<ParkingReport> reports) {
+        var weightedCounts = new java.util.HashMap<AvailabilityStatus, Double>();
+        for (var report : reports) {
+            var weight = getReputationWeight(report);
+            weightedCounts.merge(report.getAvailabilityStatus(), weight, Double::sum);
+        }
+        return weightedCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(AvailabilityStatus.UNKNOWN);
+    }
+
+    private Double calculateWeightedAveragePrice(List<ParkingReport> reports) {
+        var totalWeight = 0.0;
+        var weightedSum = 0.0;
+        for (var report : reports) {
+            if (report.getEstimatedPrice() != null) {
+                var weight = getReputationWeight(report);
+                weightedSum += report.getEstimatedPrice() * weight;
+                totalWeight += weight;
+            }
+        }
+        return totalWeight > 0 ? weightedSum / totalWeight : null;
+    }
+
+    private Double calculateWeightedAverageSafety(List<ParkingReport> reports) {
+        var totalWeight = 0.0;
+        var weightedSum = 0.0;
+        for (var report : reports) {
+            if (report.getSafetyRating() != null) {
+                var weight = getReputationWeight(report);
+                weightedSum += report.getSafetyRating() * weight;
+                totalWeight += weight;
+            }
+        }
+        return totalWeight > 0 ? weightedSum / totalWeight : null;
+    }
+
     private ParkingSpot findSpotOrThrow(UUID spotId) {
-        return spotRepository.findById(spotId)
+        return spotRepository.findByIdAndActiveTrue(spotId)
                 .orElseThrow(() -> new SpotNotFoundException(spotId.toString()));
     }
 

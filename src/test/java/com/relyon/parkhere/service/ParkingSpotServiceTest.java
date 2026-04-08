@@ -1,15 +1,19 @@
 package com.relyon.parkhere.service;
 
 import com.relyon.parkhere.dto.request.CreateSpotRequest;
+import com.relyon.parkhere.dto.request.UpdateSpotRequest;
 import com.relyon.parkhere.exception.NearbySpotExistsException;
 import com.relyon.parkhere.exception.SpotNotFoundException;
+import com.relyon.parkhere.exception.UnauthorizedSpotModificationException;
 import com.relyon.parkhere.model.ParkingSpot;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.model.enums.SpotType;
 import com.relyon.parkhere.repository.ParkingSpotRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -34,6 +38,14 @@ class ParkingSpotServiceTest {
 
     @InjectMocks
     private ParkingSpotService parkingSpotService;
+
+    @Mock
+    private GamificationService gamificationService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(parkingSpotService, "geocodingServices", List.of());
+    }
 
     private static final GeometryFactory GF = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -152,7 +164,7 @@ class ParkingSpotServiceTest {
     void getById_shouldReturnSpot() {
         var user = buildUser();
         var spot = buildSpot(user);
-        when(parkingSpotRepository.findById(spot.getId())).thenReturn(Optional.of(spot));
+        when(parkingSpotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
 
         var response = parkingSpotService.getById(spot.getId());
 
@@ -163,7 +175,7 @@ class ParkingSpotServiceTest {
     @Test
     void getById_shouldThrowWhenNotFound() {
         var id = UUID.randomUUID();
-        when(parkingSpotRepository.findById(id)).thenReturn(Optional.empty());
+        when(parkingSpotRepository.findByIdAndActiveTrue(id)).thenReturn(Optional.empty());
 
         assertThrows(SpotNotFoundException.class, () -> parkingSpotService.getById(id));
     }
@@ -172,11 +184,57 @@ class ParkingSpotServiceTest {
     void getByUser_shouldReturnUserSpots() {
         var user = buildUser();
         var spot = buildSpot(user);
-        when(parkingSpotRepository.findByCreatedById(user.getId())).thenReturn(List.of(spot));
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+        when(parkingSpotRepository.findByCreatedByIdAndActiveTrue(user.getId(), pageable))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(spot)));
 
-        var results = parkingSpotService.getByUser(user.getId());
+        var results = parkingSpotService.getByUser(user.getId(), pageable);
 
-        assertEquals(1, results.size());
-        assertEquals("Test Spot", results.getFirst().name());
+        assertEquals(1, results.getContent().size());
+        assertEquals("Test Spot", results.getContent().getFirst().name());
+    }
+
+    @Test
+    void update_shouldUpdateAllFields() {
+        var user = buildUser();
+        var spot = buildSpot(user);
+        var request = new UpdateSpotRequest("Updated Spot", 10.0, 25.0, true, 50, "Updated notes", null);
+        when(parkingSpotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
+        when(parkingSpotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var response = parkingSpotService.update(spot.getId(), request, user);
+
+        assertEquals("Updated Spot", response.name());
+        assertEquals(10.0, response.priceMin());
+        assertEquals(25.0, response.priceMax());
+        assertTrue(response.requiresBooking());
+        assertEquals(50, response.estimatedSpots());
+        assertEquals("Updated notes", response.notes());
+    }
+
+    @Test
+    void update_shouldThrowWhenNotCreator() {
+        var creator = buildUser();
+        var otherUser = User.builder()
+                .id(UUID.randomUUID()).name("Other").email("other@test.com")
+                .password("encoded").role(Role.USER).build();
+        otherUser.setCreatedAt(LocalDateTime.now());
+        otherUser.setUpdatedAt(LocalDateTime.now());
+        var spot = buildSpot(creator);
+        var request = new UpdateSpotRequest("Hacked", 0.0, 0.0, false, null, null, null);
+        when(parkingSpotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
+
+        assertThrows(UnauthorizedSpotModificationException.class,
+                () -> parkingSpotService.update(spot.getId(), request, otherUser));
+    }
+
+    @Test
+    void update_shouldThrowWhenSpotNotFound() {
+        var user = buildUser();
+        var id = UUID.randomUUID();
+        var request = new UpdateSpotRequest("Name", 0.0, 0.0, false, null, null, null);
+        when(parkingSpotRepository.findByIdAndActiveTrue(id)).thenReturn(Optional.empty());
+
+        assertThrows(SpotNotFoundException.class, () -> parkingSpotService.update(id, request, user));
     }
 }

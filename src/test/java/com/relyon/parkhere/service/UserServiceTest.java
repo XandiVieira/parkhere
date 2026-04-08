@@ -1,10 +1,12 @@
 package com.relyon.parkhere.service;
 
+import com.relyon.parkhere.dto.request.ChangePasswordRequest;
 import com.relyon.parkhere.dto.request.LoginRequest;
 import com.relyon.parkhere.dto.request.RegisterRequest;
 import com.relyon.parkhere.dto.request.UpdateUserRequest;
 import com.relyon.parkhere.exception.EmailAlreadyExistsException;
 import com.relyon.parkhere.exception.InvalidCredentialsException;
+import com.relyon.parkhere.exception.InvalidCurrentPasswordException;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.repository.UserRepository;
@@ -17,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +39,9 @@ class UserServiceTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private List<ImageStorageService> imageStorageServices;
 
     @InjectMocks
     private UserService userService;
@@ -133,12 +139,36 @@ class UserServiceTest {
     @Test
     void updateProfile_shouldUpdateName() {
         var user = buildUser();
-        var request = new UpdateUserRequest("New Name");
+        var request = new UpdateUserRequest("New Name", null);
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
         var response = userService.updateProfile(user, request);
 
         assertEquals("New Name", response.name());
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_shouldUpdatePassword() {
+        var user = buildUser();
+        var request = new ChangePasswordRequest("currentPass", "newPassword123");
+        when(passwordEncoder.matches("currentPass", user.getPassword())).thenReturn(true);
+        when(passwordEncoder.encode("newPassword123")).thenReturn("newEncoded");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        userService.changePassword(user, request);
+
+        assertEquals("newEncoded", user.getPassword());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void changePassword_shouldThrowForWrongCurrentPassword() {
+        var user = buildUser();
+        var request = new ChangePasswordRequest("wrongPass", "newPassword123");
+        when(passwordEncoder.matches("wrongPass", user.getPassword())).thenReturn(false);
+
+        assertThrows(InvalidCurrentPasswordException.class, () -> userService.changePassword(user, request));
+        verify(userRepository, never()).save(any());
     }
 }

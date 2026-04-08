@@ -2,12 +2,17 @@ package com.relyon.parkhere.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.relyon.parkhere.config.SecurityConfig;
+import com.relyon.parkhere.dto.request.UpdatePreferencesRequest;
 import com.relyon.parkhere.dto.request.UpdateUserRequest;
+import com.relyon.parkhere.dto.response.PreferencesResponse;
 import com.relyon.parkhere.dto.response.UserResponse;
 import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.security.JwtService;
 import com.relyon.parkhere.service.LocalizedMessageService;
+import com.relyon.parkhere.service.FavoriteService;
+import com.relyon.parkhere.service.GamificationService;
+import com.relyon.parkhere.service.PreferenceService;
 import com.relyon.parkhere.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +46,15 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private FavoriteService favoriteService;
+
+    @MockitoBean
+    private GamificationService gamificationService;
+
+    @MockitoBean
+    private PreferenceService preferenceService;
 
     @MockitoBean
     private JwtService jwtService;
@@ -66,7 +81,7 @@ class UserControllerTest {
     @Test
     void getProfile_shouldReturn200() throws Exception {
         var user = buildUser();
-        var response = new UserResponse(user.getId(), "John", "john@test.com", Role.USER, 0.0, user.getCreatedAt());
+        var response = new UserResponse(user.getId(), "John", null, "john@test.com", Role.USER, 0.0, null, user.getCreatedAt());
         when(userService.getProfile(any(User.class))).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/users/me")
@@ -85,8 +100,8 @@ class UserControllerTest {
     @Test
     void updateProfile_shouldReturn200() throws Exception {
         var user = buildUser();
-        var request = new UpdateUserRequest("New Name");
-        var response = new UserResponse(user.getId(), "New Name", "john@test.com", Role.USER, 0.0, user.getCreatedAt());
+        var request = new UpdateUserRequest("New Name", null);
+        var response = new UserResponse(user.getId(), "New Name", null, "john@test.com", Role.USER, 0.0, null, user.getCreatedAt());
         when(userService.updateProfile(any(User.class), any(UpdateUserRequest.class))).thenReturn(response);
 
         mockMvc.perform(put("/api/v1/users/me")
@@ -100,12 +115,43 @@ class UserControllerTest {
     @Test
     void updateProfile_shouldReturn400ForBlankName() throws Exception {
         var user = buildUser();
-        var request = new UpdateUserRequest("");
+        var request = new UpdateUserRequest("", null);
 
         mockMvc.perform(put("/api/v1/users/me")
                         .with(SecurityMockMvcRequestPostProcessors.user(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getPreferences_shouldReturn200() throws Exception {
+        var user = buildUser();
+        var response = new PreferencesResponse(List.of("STREET"), List.of("HIGH"), false);
+        when(preferenceService.getPreferences(any(UUID.class))).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/users/me/preferences")
+                        .with(SecurityMockMvcRequestPostProcessors.user(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultSpotTypes[0]").value("STREET"))
+                .andExpect(jsonPath("$.defaultTrustLevels[0]").value("HIGH"))
+                .andExpect(jsonPath("$.freeOnly").value(false));
+    }
+
+    @Test
+    void updatePreferences_shouldReturn200() throws Exception {
+        var user = buildUser();
+        var request = new UpdatePreferencesRequest(List.of("STREET", "MALL"), List.of("HIGH"), true);
+        var response = new PreferencesResponse(List.of("STREET", "MALL"), List.of("HIGH"), true);
+        when(preferenceService.updatePreferences(any(User.class), any(UpdatePreferencesRequest.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/users/me/preferences")
+                        .with(SecurityMockMvcRequestPostProcessors.user(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultSpotTypes[0]").value("STREET"))
+                .andExpect(jsonPath("$.defaultSpotTypes[1]").value("MALL"))
+                .andExpect(jsonPath("$.freeOnly").value(true));
     }
 }

@@ -26,7 +26,6 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -37,6 +36,18 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     @Builder.Default
     private double reputationScore = 0.0;
+
+    @Column(length = 20)
+    private String provider;
+
+    @Column(length = 255)
+    private String providerId;
+
+    @Column(length = 50)
+    private String nickname;
+
+    @Column(length = 255)
+    private String profilePic;
 
     @Column(nullable = false)
     @Builder.Default

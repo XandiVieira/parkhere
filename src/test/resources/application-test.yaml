@@ -16,3 +16,16 @@ spring:
 jwt:
   secret: test-secret-key-must-be-at-least-256-bits-long-for-hs256-signing-algorithm
   expiration: 3600000
+
+parkhere:
+  decay:
+    enabled: false
+  geocoding:
+    enabled: false
+  analytics:
+    enabled: false
+  leaderboard:
+    enabled: false
+  images:
+    upload-dir: /tmp/parkhere-test-uploads
+    storage: local

@@ -2,6 +2,7 @@ package com.relyon.parkhere.dto.response;
 
 import com.relyon.parkhere.model.ParkingSpot;
 import com.relyon.parkhere.model.enums.SpotType;
+import com.relyon.parkhere.model.enums.TrustLevel;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,8 +20,10 @@ public record SpotResponse(
         Integer estimatedSpots,
         String notes,
         double trustScore,
+        TrustLevel trustLevel,
         int totalConfirmations,
         LocalDateTime lastConfirmedAt,
+        String address,
         List<ScheduleResponse> schedules,
         UUID createdBy,
         LocalDateTime createdAt
@@ -42,8 +45,10 @@ public record SpotResponse(
                 spot.getEstimatedSpots(),
                 spot.getNotes(),
                 spot.getTrustScore(),
+                TrustLevel.fromScore(spot.getTrustScore()),
                 spot.getTotalConfirmations(),
                 spot.getLastConfirmedAt(),
+                spot.getAddress(),
                 schedules,
                 spot.getCreatedBy().getId(),
                 spot.getCreatedAt()

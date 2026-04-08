@@ -2,6 +2,7 @@ package com.relyon.parkhere.dto.response;
 
 import com.relyon.parkhere.model.enums.AvailabilityStatus;
 import com.relyon.parkhere.model.enums.SpotType;
+import com.relyon.parkhere.model.enums.TrustLevel;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,7 +16,9 @@ public record SpotSummaryResponse(
         double priceMin,
         double priceMax,
         boolean requiresBooking,
+        String address,
         double trustScore,
+        TrustLevel trustLevel,
         int totalConfirmations,
         LocalDateTime lastConfirmedAt,
         AvailabilityStatus dominantAvailability,
@@ -23,5 +26,6 @@ public record SpotSummaryResponse(
         Double avgSafetyRating,
         double informalChargePercentage,
         boolean informalChargeReportedRecently,
+        double availabilityRate,
         LocalDateTime lastReportAt
 ) {}

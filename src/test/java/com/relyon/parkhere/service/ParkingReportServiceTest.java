@@ -1,7 +1,9 @@
 package com.relyon.parkhere.service;
 
 import com.relyon.parkhere.dto.request.CreateReportRequest;
+import com.relyon.parkhere.exception.ReportCooldownException;
 import com.relyon.parkhere.exception.SpotNotFoundException;
+import com.relyon.parkhere.repository.ReportImageRepository;
 import com.relyon.parkhere.model.ParkingReport;
 import com.relyon.parkhere.model.ParkingSpot;
 import com.relyon.parkhere.model.User;
@@ -36,6 +38,21 @@ class ParkingReportServiceTest {
 
     @Mock
     private ParkingSpotRepository spotRepository;
+
+    @Mock
+    private TrustScoreService trustScoreService;
+
+    @Mock
+    private ReputationService reputationService;
+
+    @Mock
+    private GamificationService gamificationService;
+
+    @Mock
+    private List<ImageStorageService> imageStorageServices;
+
+    @Mock
+    private ReportImageRepository reportImageRepository;
 
     @InjectMocks
     private ParkingReportService reportService;
@@ -80,7 +97,7 @@ class ParkingReportServiceTest {
                 AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Plenty of space",
                 -22.9070, -43.1730
         );
-        when(spotRepository.findById(spot.getId())).thenReturn(Optional.of(spot));
+        when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
         when(reportRepository.save(any(ParkingReport.class))).thenAnswer(inv -> {
             var report = inv.<ParkingReport>getArgument(0);
             report.setId(UUID.randomUUID());
@@ -88,16 +105,15 @@ class ParkingReportServiceTest {
             report.setUpdatedAt(LocalDateTime.now());
             return report;
         });
-        when(spotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        var response = reportService.submitReport(spot.getId(), request, user);
+        var response = reportService.submitReport(spot.getId(), request, user, null);
 
         assertNotNull(response);
         assertEquals(AvailabilityStatus.AVAILABLE, response.availabilityStatus());
         assertEquals(10.0, response.estimatedPrice());
         assertEquals(1, spot.getTotalConfirmations());
         verify(reportRepository).save(any(ParkingReport.class));
-        verify(spotRepository).save(spot);
+        verify(trustScoreService).recalculate(spot);
     }
 
     @Test
@@ -108,9 +124,9 @@ class ParkingReportServiceTest {
                 AvailabilityStatus.AVAILABLE, null, null, false, null,
                 -22.9070, -43.1730
         );
-        when(spotRepository.findById(spotId)).thenReturn(Optional.empty());
+        when(spotRepository.findByIdAndActiveTrue(spotId)).thenReturn(Optional.empty());
 
-        assertThrows(SpotNotFoundException.class, () -> reportService.submitReport(spotId, request, user));
+        assertThrows(SpotNotFoundException.class, () -> reportService.submitReport(spotId, request, user, null));
     }
 
     @Test
@@ -121,7 +137,7 @@ class ParkingReportServiceTest {
                 AvailabilityStatus.AVAILABLE, null, null, false, null,
                 -22.9068, -43.1729
         );
-        when(spotRepository.findById(spot.getId())).thenReturn(Optional.of(spot));
+        when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
         when(reportRepository.save(any(ParkingReport.class))).thenAnswer(inv -> {
             var report = inv.<ParkingReport>getArgument(0);
             report.setId(UUID.randomUUID());
@@ -129,9 +145,8 @@ class ParkingReportServiceTest {
             report.setUpdatedAt(LocalDateTime.now());
             return report;
         });
-        when(spotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        var response = reportService.submitReport(spot.getId(), request, user);
+        var response = reportService.submitReport(spot.getId(), request, user, null);
 
         assertTrue(response.gpsDistanceMeters() < 1.0);
     }
@@ -141,14 +156,15 @@ class ParkingReportServiceTest {
         var user = buildUser();
         var spot = buildSpot(user);
         var report = buildReport(spot, user);
-        when(spotRepository.findById(spot.getId())).thenReturn(Optional.of(spot));
-        when(reportRepository.findByParkingSpotIdOrderByCreatedAtDesc(spot.getId()))
-                .thenReturn(List.of(report));
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+        when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
+        when(reportRepository.findByParkingSpotIdOrderByCreatedAtDesc(spot.getId(), pageable))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(report)));
 
-        var results = reportService.getReportsForSpot(spot.getId());
+        var results = reportService.getReportsForSpot(spot.getId(), pageable);
 
-        assertEquals(1, results.size());
-        assertEquals(AvailabilityStatus.AVAILABLE, results.getFirst().availabilityStatus());
+        assertEquals(1, results.getContent().size());
+        assertEquals(AvailabilityStatus.AVAILABLE, results.getContent().getFirst().availabilityStatus());
     }
 
     @Test
@@ -167,7 +183,7 @@ class ParkingReportServiceTest {
         var report3 = buildReport(spot, user);
         report3.setAvailabilityStatus(AvailabilityStatus.UNAVAILABLE);
 
-        when(spotRepository.findById(spot.getId())).thenReturn(Optional.of(spot));
+        when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
         when(reportRepository.findByParkingSpotIdAndCreatedAtAfterOrderByCreatedAtDesc(eq(spot.getId()), any()))
                 .thenReturn(List.of(report1, report2, report3));
 
@@ -185,7 +201,7 @@ class ParkingReportServiceTest {
     void getSummary_shouldHandleNoReports() {
         var user = buildUser();
         var spot = buildSpot(user);
-        when(spotRepository.findById(spot.getId())).thenReturn(Optional.of(spot));
+        when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
         when(reportRepository.findByParkingSpotIdAndCreatedAtAfterOrderByCreatedAtDesc(eq(spot.getId()), any()))
                 .thenReturn(List.of());
 
@@ -205,5 +221,21 @@ class ParkingReportServiceTest {
 
         var distanceRio = ParkingReportService.calculateDistance(-22.9068, -43.1729, -22.9110, -43.1650);
         assertTrue(distanceRio > 500 && distanceRio < 1500);
+    }
+
+    @Test
+    void submitReport_shouldThrowWhenCooldownActive() {
+        var user = buildUser();
+        var spot = buildSpot(user);
+        var request = new CreateReportRequest(
+                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                -22.9070, -43.1730
+        );
+        when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
+        when(reportRepository.existsByParkingSpotIdAndUserIdAndCreatedAtAfter(eq(spot.getId()), eq(user.getId()), any()))
+                .thenReturn(true);
+
+        assertThrows(ReportCooldownException.class, () -> reportService.submitReport(spot.getId(), request, user, null));
+        verify(reportRepository, never()).save(any());
     }
 }

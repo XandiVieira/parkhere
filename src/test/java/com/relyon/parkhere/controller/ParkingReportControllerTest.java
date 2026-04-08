@@ -10,6 +10,7 @@ import com.relyon.parkhere.model.User;
 import com.relyon.parkhere.model.enums.AvailabilityStatus;
 import com.relyon.parkhere.model.enums.Role;
 import com.relyon.parkhere.model.enums.SpotType;
+import com.relyon.parkhere.model.enums.TrustLevel;
 import com.relyon.parkhere.security.JwtService;
 import com.relyon.parkhere.service.LocalizedMessageService;
 import com.relyon.parkhere.service.ParkingReportService;
@@ -22,6 +23,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,9 +80,9 @@ class ParkingReportControllerTest {
         var response = new ReportResponse(
                 UUID.randomUUID(), spotId, user.getId(),
                 AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Good spot",
-                50.0, LocalDateTime.now()
+                50.0, List.of(), LocalDateTime.now()
         );
-        when(reportService.submitReport(eq(spotId), any(CreateReportRequest.class), any(User.class)))
+        when(reportService.submitReport(eq(spotId), any(CreateReportRequest.class), any(User.class), any()))
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/v1/spots/" + spotId + "/reports")
@@ -112,7 +116,7 @@ class ParkingReportControllerTest {
                 AvailabilityStatus.AVAILABLE, null, null, false, null,
                 -22.9070, -43.1730
         );
-        when(reportService.submitReport(eq(spotId), any(CreateReportRequest.class), any(User.class)))
+        when(reportService.submitReport(eq(spotId), any(CreateReportRequest.class), any(User.class), any()))
                 .thenThrow(new SpotNotFoundException(spotId.toString()));
         when(localizedMessageService.translate(any(SpotNotFoundException.class)))
                 .thenReturn("Parking spot not found");
@@ -131,14 +135,15 @@ class ParkingReportControllerTest {
         var response = new ReportResponse(
                 UUID.randomUUID(), spotId, user.getId(),
                 AvailabilityStatus.AVAILABLE, 10.0, 4, false, null,
-                50.0, LocalDateTime.now()
+                50.0, List.of(), LocalDateTime.now()
         );
-        when(reportService.getReportsForSpot(spotId)).thenReturn(List.of(response));
+        var pageResult = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
+        when(reportService.getReportsForSpot(eq(spotId), any())).thenReturn(pageResult);
 
         mockMvc.perform(get("/api/v1/spots/" + spotId + "/reports")
                         .with(SecurityMockMvcRequestPostProcessors.user(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].availabilityStatus").value("AVAILABLE"));
+                .andExpect(jsonPath("$.content[0].availabilityStatus").value("AVAILABLE"));
     }
 
     @Test
@@ -148,9 +153,9 @@ class ParkingReportControllerTest {
         var summary = new SpotSummaryResponse(
                 spotId, "Test Spot", SpotType.STREET,
                 -22.9068, -43.1729, 5.0, 15.0, false,
-                0.75, 10, LocalDateTime.now(),
+                "Rua Test, 123", 0.75, TrustLevel.HIGH, 10, LocalDateTime.now(),
                 AvailabilityStatus.AVAILABLE,
-                10.0, 4.0, 20.0, false, LocalDateTime.now()
+                10.0, 4.0, 20.0, false, 0.8, LocalDateTime.now()
         );
         when(reportService.getSummary(spotId)).thenReturn(summary);
 
