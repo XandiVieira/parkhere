@@ -9,6 +9,7 @@ import axios from "axios";
 import { t } from "@/lib/i18n";
 import type { TrustLevel, SpotType, SpotResponse } from "@/types/api";
 import QuickReportModal from "@/components/reports/QuickReportModal";
+import SpotListView from "@/components/spots/SpotListView";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -57,6 +58,7 @@ function HomePageInner() {
   const [searchValue, setSearchValue] = useState("");
   const [searching, setSearching] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [filters, setFilters] = useState<MapFilters>({
     trustLevels: new Set(ALL_TRUST),
     spotTypes: new Set(ALL_TYPES),
@@ -135,7 +137,18 @@ function HomePageInner() {
         </form>
       </div>
 
-      {/* Filter button */}
+      {/* View toggle + Filter button */}
+      <div className="absolute top-[4.5rem] right-4 z-[1000] flex overflow-hidden rounded-lg bg-white shadow-lg">
+        <button onClick={() => setViewMode("map")}
+          className={`px-3 py-2 text-sm font-medium ${viewMode === "map" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"}`}>
+          🗺 Mapa
+        </button>
+        <button onClick={() => setViewMode("list")}
+          className={`px-3 py-2 text-sm font-medium ${viewMode === "list" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"}`}>
+          📋 Lista
+        </button>
+      </div>
+
       <button
         onClick={() => setFiltersOpen(!filtersOpen)}
         className="absolute top-[4.5rem] left-4 z-[1000] flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-lg hover:bg-gray-50"
@@ -206,18 +219,31 @@ function HomePageInner() {
         </div>
       </div>
 
-      {/* Map */}
+      {/* Map or List */}
       <div className="h-[calc(100vh-3.5rem)]">
-        <MapView filters={filters} onFlyToReady={(fn) => {
-          flyToRef.current = fn;
-          if (pendingFlyTo.current) {
-            fn(pendingFlyTo.current.lat, pendingFlyTo.current.lng);
-            pendingFlyTo.current = null;
-          }
-        }} onSpotsLoaded={(spots, lat, lng) => {
-          setNearbySpots(spots);
-          setUserPos({ lat, lng });
-        }} />
+        {viewMode === "map" ? (
+          <MapView filters={filters} onFlyToReady={(fn) => {
+            flyToRef.current = fn;
+            if (pendingFlyTo.current) {
+              fn(pendingFlyTo.current.lat, pendingFlyTo.current.lng);
+              pendingFlyTo.current = null;
+            }
+          }} onSpotsLoaded={(spots, lat, lng) => {
+            setNearbySpots(spots);
+            setUserPos({ lat, lng });
+          }} />
+        ) : (
+          <SpotListView
+            spots={nearbySpots.filter(spot => {
+              if (!filters.trustLevels.has(spot.trustLevel)) return false;
+              if (!filters.spotTypes.has(spot.type)) return false;
+              if (filters.freeOnly && spot.priceMax > 0) return false;
+              return true;
+            })}
+            userLat={userPos?.lat || -30.03}
+            userLng={userPos?.lng || -51.22}
+          />
+        )}
       </div>
 
       {/* Floating action buttons */}
