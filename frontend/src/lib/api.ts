@@ -32,11 +32,15 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Attach JWT token to every request EXCEPT auth endpoints (login, register, etc.)
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const isAuthEndpoint = config.url?.startsWith("/auth/");
+    if (!isAuthEndpoint) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
   }
   return config;
