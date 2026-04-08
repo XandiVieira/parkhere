@@ -34,9 +34,9 @@ export default function QuickReportModal({ spot, userLat, userLng, onClose, onSu
       onSuccess();
     } catch (err: any) {
       if (err?.response?.status === 429) {
-        setError("Aguarde 30 minutos entre relatos para esta vaga");
+        setError(t("report.rateLimited"));
       } else {
-        setError("Falha ao enviar relato");
+        setError(t("report.submitFailed"));
       }
     } finally {
       setLoading(false);
@@ -57,7 +57,7 @@ export default function QuickReportModal({ spot, userLat, userLng, onClose, onSu
 
         {error && <p className="mb-3 rounded bg-red-50 p-2 text-sm text-red-600">{error}</p>}
 
-        {/* Availability — big tap targets */}
+        {/* Availability */}
         <p className="mb-2 text-sm font-medium text-gray-700">{t("spot.availability")}</p>
         <div className="mb-4 grid grid-cols-3 gap-2">
           {(["AVAILABLE", "UNAVAILABLE", "UNKNOWN"] as AvailabilityStatus[]).map((s) => (
@@ -67,12 +67,12 @@ export default function QuickReportModal({ spot, userLat, userLng, onClose, onSu
                   ? s === "AVAILABLE" ? "bg-green-600 text-white" : s === "UNAVAILABLE" ? "bg-red-600 text-white" : "bg-gray-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}>
-              {s === "AVAILABLE" ? "✅ Disponível" : s === "UNAVAILABLE" ? "❌ Lotado" : "❓ Incerto"}
+              {s === "AVAILABLE" ? `✅ ${t("report.available")}` : s === "UNAVAILABLE" ? `❌ ${t("report.full")}` : `❓ ${t("report.unknown")}`}
             </button>
           ))}
         </div>
 
-        {/* Safety — star buttons */}
+        {/* Safety */}
         <p className="mb-2 text-sm font-medium text-gray-700">{t("report.safety")}</p>
         <div className="mb-4 flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (

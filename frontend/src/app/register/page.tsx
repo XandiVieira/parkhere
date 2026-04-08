@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { t } from "@/lib/i18n";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,11 +22,11 @@ export default function RegisterPage() {
     setError("");
 
     if (password.length < 8) {
-      setError("A senha deve ter pelo menos 8 caracteres");
+      setError(t("auth.passwordMinError"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem");
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
@@ -39,7 +40,7 @@ export default function RegisterPage() {
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
-      setError(msg || "Falha ao cadastrar. Tente novamente.");
+      setError(msg || t("auth.registerFailed"));
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ export default function RegisterPage() {
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">Create Account</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">{t("auth.createAccount")}</h1>
 
         {error && (
           <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
@@ -57,7 +58,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
-              Name
+              {t("auth.name")}
             </label>
             <input
               id="name"
@@ -66,13 +67,13 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="Seu nome"
+              placeholder={t("auth.namePlaceholder")}
             />
           </div>
 
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-              Email
+              {t("auth.email")}
             </label>
             <input
               id="email"
@@ -81,13 +82,13 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="you@example.com"
+              placeholder={t("auth.emailPlaceholder")}
             />
           </div>
 
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-              Password
+              {t("auth.password")}
             </label>
             <input
               id="password"
@@ -96,13 +97,13 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="Pelo menos 8 caracteres"
+              placeholder={t("auth.passwordMinLength")}
             />
           </div>
 
           <div>
             <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-700">
-              Confirm Password
+              {t("auth.confirmPassword")}
             </label>
             <input
               id="confirmPassword"
@@ -111,7 +112,7 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="Repita sua senha"
+              placeholder={t("auth.passwordRepeatPlaceholder")}
             />
           </div>
 
@@ -120,14 +121,14 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full rounded-md bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? "Criando conta..." : "Criar Conta"}
+            {loading ? t("auth.creating") : t("auth.createAccount")}
           </button>
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{" "}
+          {t("auth.hasAccount")}{" "}
           <Link href="/login" className="font-medium text-blue-600 hover:underline">
-            Sign In
+            {t("auth.signIn")}
           </Link>
         </div>
       </div>

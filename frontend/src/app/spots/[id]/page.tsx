@@ -4,6 +4,7 @@ import { use, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { spotsApi, reportsApi, removalApi, usersApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { t } from "@/lib/i18n";
 import type {
   SpotResponse,
   SpotSummaryResponse,
@@ -16,6 +17,12 @@ import ReportForm from "@/components/reports/ReportForm";
 import { formatPrice, formatDate, spotTypeLabel } from "@/lib/utils";
 
 type Tab = "summary" | "reports" | "analytics";
+
+const TAB_LABELS: Record<Tab, () => string> = {
+  summary: () => t("spot.summary"),
+  reports: () => t("spot.reports"),
+  analytics: () => t("spot.analytics"),
+};
 
 export default function SpotDetailPage({
   params,
@@ -47,7 +54,7 @@ export default function SpotDetailPage({
       setSpot(spotRes.data);
       setSummary(summaryRes.data);
     } catch {
-      setError("Failed to load spot details");
+      setError(t("spot.failedLoad"));
     } finally {
       setLoading(false);
     }
@@ -100,7 +107,7 @@ export default function SpotDetailPage({
           setIsFavorite(true);
         } catch (err: any) {
           if (err?.response?.status === 409) {
-            setIsFavorite(true); // already favorited
+            setIsFavorite(true);
           } else throw err;
         }
       }
@@ -110,13 +117,13 @@ export default function SpotDetailPage({
   };
 
   const requestRemoval = async () => {
-    if (!confirm("Tem certeza que deseja solicitar remoção desta vaga?")) return;
+    if (!confirm(t("spot.removalConfirm"))) return;
     setRemovalLoading(true);
     try {
-      await removalApi.request(id, "Vaga não existe mais ou está incorreta");
-      alert("Solicitação de remoção enviada");
+      await removalApi.request(id, t("spot.removalReason"));
+      alert(t("spot.removalSent"));
     } catch {
-      alert("Falha ao solicitar remoção");
+      alert(t("spot.removalFailed"));
     } finally {
       setRemovalLoading(false);
     }
@@ -125,7 +132,7 @@ export default function SpotDetailPage({
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{t("common.loading")}</div>
       </div>
     );
   }
@@ -134,9 +141,9 @@ export default function SpotDetailPage({
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">{error || "Vaga não encontrada"}</p>
+          <p className="text-red-600">{error || t("spot.notFound")}</p>
           <button onClick={() => router.back()} className="mt-2 text-sm text-blue-600 hover:underline">
-            Go back
+            {t("common.goBack")}
           </button>
         </div>
       </div>
@@ -149,17 +156,17 @@ export default function SpotDetailPage({
       <div className="mb-6">
         <div className="mb-3 flex items-center gap-4">
           <button onClick={() => router.back()} className="text-sm text-blue-600 hover:underline">
-            &larr; Voltar
+            &larr; {t("common.back")}
           </button>
           <a href={`/?lat=${spot.latitude}&lng=${spot.longitude}`} className="text-sm text-green-600 hover:underline">
-            📍 Ver no mapa
+            📍 {t("map.viewOnMap")}
           </a>
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}`}
             target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1 rounded bg-green-600 px-3 py-1 text-sm font-medium text-white hover:bg-green-700"
           >
-            🧭 Navegar
+            🧭 {t("map.navigate")}
           </a>
         </div>
         <div className="flex items-start justify-between">
@@ -173,22 +180,22 @@ export default function SpotDetailPage({
 
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-700">
           <span>
-            <strong>Preço:</strong> {formatPrice(spot.priceMin, spot.priceMax)}
+            <strong>{t("spot.price")}:</strong> {formatPrice(spot.priceMin, spot.priceMax)}
           </span>
           <span>
-            <strong>Confiança:</strong> {(spot.trustScore * 100).toFixed(0)}%
+            <strong>{t("spot.trustScore")}:</strong> {(spot.trustScore * 100).toFixed(0)}%
           </span>
           <span>
-            <strong>Confirmações:</strong> {spot.totalConfirmations}
+            <strong>{t("spot.confirmations")}:</strong> {spot.totalConfirmations}
           </span>
           {spot.estimatedSpots !== null && (
             <span>
-              <strong>Vagas estimadas:</strong> {spot.estimatedSpots}
+              <strong>{t("spot.estimatedSpots")}:</strong> {spot.estimatedSpots}
             </span>
           )}
           {spot.requiresBooking && (
             <span className="rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
-              Reserva necessária
+              {t("spot.requiresBooking")}
             </span>
           )}
         </div>
@@ -196,7 +203,7 @@ export default function SpotDetailPage({
         {/* Schedules */}
         {spot.schedules.length > 0 && (
           <div className="mt-4">
-            <h3 className="mb-2 text-sm font-semibold text-gray-700">Horários</h3>
+            <h3 className="mb-2 text-sm font-semibold text-gray-700">{t("spot.schedules")}</h3>
             <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
               {spot.schedules.map((s) => (
                 <div key={s.id} className="flex justify-between rounded bg-gray-50 px-3 py-1.5 text-xs">
@@ -204,7 +211,7 @@ export default function SpotDetailPage({
                   <span className="text-gray-500">
                     {s.openTime} - {s.closeTime}
                     {s.paidOnly && (
-                      <span className="ml-1 text-yellow-600">(paid)</span>
+                      <span className="ml-1 text-yellow-600">({t("spot.paid")})</span>
                     )}
                   </span>
                 </div>
@@ -224,20 +231,20 @@ export default function SpotDetailPage({
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              {isFavorite ? "❤️" : "🤍"} {isFavorite ? "Favoritado" : "Favoritar"}
+              {isFavorite ? "❤️" : "🤍"} {isFavorite ? t("spot.favorited") : t("spot.favorite")}
             </button>
             <button
               onClick={() => setShowReportForm(!showReportForm)}
               className="rounded-md bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-200"
             >
-              {showReportForm ? "Cancelar Relato" : "Enviar Relato"}
+              {showReportForm ? t("report.cancelReport") : t("report.submit")}
             </button>
             <button
               onClick={requestRemoval}
               disabled={removalLoading}
               className="rounded-md bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-700 hover:bg-orange-200 disabled:opacity-50"
             >
-              Solicitar Remoção
+              {t("spot.requestRemoval")}
             </button>
           </div>
         )}
@@ -264,13 +271,13 @@ export default function SpotDetailPage({
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`border-b-2 pb-3 text-sm font-medium capitalize transition ${
+              className={`border-b-2 pb-3 text-sm font-medium transition ${
                 activeTab === tab
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              {tab}
+              {TAB_LABELS[tab]()}
             </button>
           ))}
         </nav>
@@ -282,8 +289,8 @@ export default function SpotDetailPage({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <SummaryCard
-                label="Disponibilidade"
-                value={summary.dominantAvailability.replace("_", " ")}
+                label={t("spot.availability")}
+                value={summary.dominantAvailability === "AVAILABLE" ? t("report.available") : summary.dominantAvailability === "UNAVAILABLE" ? t("report.unavailable") : t("report.unknown")}
                 color={
                   summary.dominantAvailability === "AVAILABLE"
                     ? "text-green-700"
@@ -293,22 +300,22 @@ export default function SpotDetailPage({
                 }
               />
               <SummaryCard
-                label="Preço Médio"
+                label={t("spot.avgPrice")}
                 value={summary.avgEstimatedPrice !== null ? `R$${summary.avgEstimatedPrice.toFixed(0)}` : "N/A"}
               />
               <SummaryCard
-                label="Segurança"
+                label={t("spot.avgSafety")}
                 value={summary.avgSafetyRating !== null ? `${summary.avgSafetyRating.toFixed(1)}/5` : "N/A"}
               />
               <SummaryCard
-                label="Cobrança Informal"
+                label={t("spot.informalCharge")}
                 value={`${summary.informalChargePercentage.toFixed(0)}%`}
                 color={summary.informalChargeReportedRecently ? "text-red-600" : undefined}
               />
             </div>
             {summary.lastReportAt && (
               <p className="text-sm text-gray-500">
-                Último relato: {formatDate(summary.lastReportAt)}
+                {t("spot.lastReport")}: {formatDate(summary.lastReportAt)}
               </p>
             )}
           </div>
@@ -331,19 +338,19 @@ export default function SpotDetailPage({
                                 : "bg-gray-100 text-gray-700"
                           }`}
                         >
-                          {report.availabilityStatus}
+                          {report.availabilityStatus === "AVAILABLE" ? t("report.available") : report.availabilityStatus === "UNAVAILABLE" ? t("report.unavailable") : t("report.unknown")}
                         </span>
                         <span className="text-xs text-gray-400">{formatDate(report.createdAt)}</span>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-600">
                         {report.estimatedPrice !== null && (
-                          <span>Preço: R${report.estimatedPrice}</span>
+                          <span>{t("spot.price")}: R${report.estimatedPrice}</span>
                         )}
                         {report.safetyRating !== null && (
-                          <span>Segurança: {"★".repeat(report.safetyRating)}{"☆".repeat(5 - report.safetyRating)}</span>
+                          <span>{t("report.safety")}: {"★".repeat(report.safetyRating)}{"☆".repeat(5 - report.safetyRating)}</span>
                         )}
                         {report.informalChargeReported && (
-                          <span className="text-red-600">Cobrança informal</span>
+                          <span className="text-red-600">{t("spot.informalCharge")}</span>
                         )}
                       </div>
                       {report.note && (
@@ -369,23 +376,23 @@ export default function SpotDetailPage({
                       disabled={reports.first}
                       className="rounded-md bg-gray-100 px-3 py-1 text-sm disabled:opacity-50"
                     >
-                      Anterior
+                      {t("common.previous")}
                     </button>
                     <span className="text-sm text-gray-500">
-                      Page {reports.number + 1} of {reports.totalPages}
+                      {t("common.page")} {reports.number + 1} {t("common.of")} {reports.totalPages}
                     </span>
                     <button
                       onClick={() => setReportPage((p) => p + 1)}
                       disabled={reports.last}
                       className="rounded-md bg-gray-100 px-3 py-1 text-sm disabled:opacity-50"
                     >
-                      Próximo
+                      {t("common.next")}
                     </button>
                   </div>
                 )}
               </>
             ) : (
-              <p className="text-center text-sm text-gray-500">Nenhum relato ainda.</p>
+              <p className="text-center text-sm text-gray-500">{t("spot.noReports")}</p>
             )}
           </div>
         )}
@@ -397,12 +404,12 @@ export default function SpotDetailPage({
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="pb-2 pr-4 font-medium text-gray-700">Dia</th>
-                      <th className="pb-2 pr-4 font-medium text-gray-700">Hora</th>
-                      <th className="pb-2 pr-4 font-medium text-gray-700">Disponibilidade</th>
-                      <th className="pb-2 pr-4 font-medium text-gray-700">Avg Price</th>
-                      <th className="pb-2 pr-4 font-medium text-gray-700">Segurança</th>
-                      <th className="pb-2 font-medium text-gray-700">Relatos</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-700">{t("spot.analytics.day")}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-700">{t("spot.analytics.hour")}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-700">{t("spot.availability")}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-700">{t("spot.analytics.avgPrice")}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-700">{t("spot.analytics.safety")}</th>
+                      <th className="pb-2 font-medium text-gray-700">{t("spot.analytics.reports")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -436,7 +443,7 @@ export default function SpotDetailPage({
                 </table>
               </div>
             ) : (
-              <p className="text-center text-sm text-gray-500">No analytics data available yet.</p>
+              <p className="text-center text-sm text-gray-500">{t("spot.analytics.noData")}</p>
             )}
           </div>
         )}

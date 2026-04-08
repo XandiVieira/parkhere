@@ -33,7 +33,7 @@ export default function LoginPage() {
       const msg = err && typeof err === "object" && "response" in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
-      setError(msg || "Email ou senha inválidos");
+      setError(msg || t("auth.invalidCredentials"));
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export default function LoginPage() {
       login(res.data.token, res.data.user);
       router.push("/");
     } catch {
-      setError("Falha ao entrar com Google");
+      setError(t("auth.googleError"));
     } finally {
       setLoading(false);
     }
@@ -70,13 +70,13 @@ export default function LoginPage() {
         <div className="mb-4 flex justify-center">
           <GoogleLoginButton
             onSuccess={(credential) => handleGoogleSuccess({ credential })}
-            onError={() => setError("Falha ao entrar com Google")}
+            onError={() => setError(t("auth.googleError"))}
           />
         </div>
 
         <div className="mb-4 flex items-center gap-3">
           <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs text-gray-400">ou</span>
+          <span className="text-xs text-gray-400">{t("common.or")}</span>
           <div className="h-px flex-1 bg-gray-200" />
         </div>
 
@@ -85,7 +85,7 @@ export default function LoginPage() {
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">{t("auth.email")}</label>
             <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              placeholder="voce@exemplo.com" />
+              placeholder={t("auth.emailPlaceholder")} />
           </div>
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">{t("auth.password")}</label>

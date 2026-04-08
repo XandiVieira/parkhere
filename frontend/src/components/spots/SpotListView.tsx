@@ -2,7 +2,7 @@
 
 import type { SpotResponse } from "@/types/api";
 import SpotCard from "./SpotCard";
-import { formatPrice } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 interface SpotListViewProps {
   spots: SpotResponse[];
@@ -32,14 +32,14 @@ export default function SpotListView({ spots, userLat, userLng }: SpotListViewPr
   if (sorted.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-gray-500">Nenhuma vaga encontrada nesta região</p>
+        <p className="text-gray-500">{t("map.noSpots")}</p>
       </div>
     );
   }
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50 px-4 py-4">
-      <p className="mb-3 text-sm text-gray-500">{sorted.length} vagas encontradas</p>
+      <p className="mb-3 text-sm text-gray-500">{sorted.length} {t("map.spotsFound")}</p>
       <div className="space-y-3">
         {sorted.map((spot) => {
           const dist = calcDistance(userLat, userLng, spot.latitude, spot.longitude);

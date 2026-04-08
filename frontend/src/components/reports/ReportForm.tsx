@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { reportsApi } from "@/lib/api";
+import { t } from "@/lib/i18n";
 import type { AvailabilityStatus } from "@/types/api";
 
 interface ReportFormProps {
@@ -55,7 +56,7 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
-      setError(msg || "Failed to submit report");
+      setError(msg || t("report.submitFailed"));
     } finally {
       setLoading(false);
     }
@@ -64,14 +65,14 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
   if (success) {
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
-        <p className="font-medium text-green-700">Report submitted successfully!</p>
+        <p className="font-medium text-green-700">{t("report.success")}</p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-gray-200 bg-white p-6">
-      <h3 className="text-lg font-semibold text-gray-900">Enviar Relato</h3>
+      <h3 className="text-lg font-semibold text-gray-900">{t("report.title")}</h3>
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
@@ -79,7 +80,7 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
 
       {/* Disponibilidade */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">Disponibilidade</label>
+        <label className="mb-2 block text-sm font-medium text-gray-700">{t("spot.availability")}</label>
         <div className="flex gap-3">
           {(["AVAILABLE", "UNAVAILABLE", "UNKNOWN"] as AvailabilityStatus[]).map((status) => (
             <label key={status} className="flex items-center gap-1.5">
@@ -92,7 +93,7 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
                 className="text-blue-600"
               />
               <span className="text-sm text-gray-700">
-                {status === "AVAILABLE" ? "Disponível" : status === "UNAVAILABLE" ? "Indisponível" : "Incerto"}
+                {status === "AVAILABLE" ? t("report.available") : status === "UNAVAILABLE" ? t("report.unavailable") : t("report.unknown")}
               </span>
             </label>
           ))}
@@ -102,7 +103,7 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
       {/* Estimated Price */}
       <div>
         <label htmlFor="estimatedPrice" className="mb-1 block text-sm font-medium text-gray-700">
-          Preço Estimado (R$)
+          {t("report.price")}
         </label>
         <input
           id="estimatedPrice"
@@ -111,14 +112,14 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
           step="0.5"
           value={estimatedPrice}
           onChange={(e) => setEstimatedPrice(e.target.value)}
-          placeholder="Deixe vazio se grátis"
+          placeholder={t("report.priceFree")}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
-      {/* Avaliação de Segurança */}
+      {/* Safety Rating */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700">Avaliação de Segurança</label>
+        <label className="mb-2 block text-sm font-medium text-gray-700">{t("report.safety")}</label>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -141,13 +142,13 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
           onChange={(e) => setInformalCharge(e.target.checked)}
           className="rounded text-blue-600"
         />
-        <span className="text-sm text-gray-700">Informal charge reported (e.g., &quot;flanelinha&quot;)</span>
+        <span className="text-sm text-gray-700">{t("report.informalCharge")}</span>
       </label>
 
       {/* Note */}
       <div>
         <label htmlFor="note" className="mb-1 block text-sm font-medium text-gray-700">
-          Observação (opcional)
+          {t("report.note")}
         </label>
         <textarea
           id="note"
@@ -155,7 +156,7 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
           onChange={(e) => setNote(e.target.value)}
           rows={3}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          placeholder="Observações adicionais..."
+          placeholder={t("report.additionalNotes")}
         />
       </div>
 
@@ -165,14 +166,14 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
           disabled={loading}
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Enviando..." : "Enviar Relato"}
+          {loading ? t("report.submitting") : t("report.submit")}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
       </div>
     </form>

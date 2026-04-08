@@ -87,7 +87,7 @@ export default function LeaderboardsPage() {
                     <td className="px-4 py-3">
                       <span className={isCurrentUser ? "font-semibold text-blue-700" : "text-gray-900"}>
                         {entry.userName}
-                        {isCurrentUser && <span className="ml-2 text-xs text-blue-500">(você)</span>}
+                        {isCurrentUser && <span className="ml-2 text-xs text-blue-500">{t("common.you")}</span>}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-medium text-gray-700">

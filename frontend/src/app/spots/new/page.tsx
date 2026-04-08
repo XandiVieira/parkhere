@@ -5,24 +5,19 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { spotsApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { t } from "@/lib/i18n";
 import type { SpotType } from "@/types/api";
 
 const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), {
   ssr: false,
   loading: () => (
     <div className="flex h-64 items-center justify-center rounded-md bg-gray-100">
-      <span className="text-sm text-gray-500">Loading map...</span>
+      <span className="text-sm text-gray-500">{t("map.loading")}</span>
     </div>
   ),
 });
 
-const SPOT_TYPES: { value: SpotType; label: string }[] = [
-  { value: "STREET", label: "Rua" },
-  { value: "PARKING_LOT", label: "Estacionamento" },
-  { value: "MALL", label: "Shopping" },
-  { value: "TERRAIN", label: "Terreno" },
-  { value: "ZONA_AZUL", label: "Zona Azul" },
-];
+const SPOT_TYPES: SpotType[] = ["STREET", "PARKING_LOT", "MALL", "TERRAIN", "ZONA_AZUL"];
 
 export default function NewSpotPage() {
   const router = useRouter();
@@ -44,12 +39,12 @@ export default function NewSpotPage() {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">You must be logged in to add a spot.</p>
+          <p className="text-gray-600">{t("auth.loginRequired")}</p>
           <button
             onClick={() => router.push("/login")}
             className="mt-2 text-sm font-medium text-blue-600 hover:underline"
           >
-            Sign In
+            {t("auth.signIn")}
           </button>
         </div>
       </div>
@@ -61,7 +56,7 @@ export default function NewSpotPage() {
     setError("");
 
     if (!latitude || !longitude) {
-      setError("Selecione uma localização no mapa");
+      setError(t("newSpot.selectLocation"));
       return;
     }
 
@@ -84,7 +79,7 @@ export default function NewSpotPage() {
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : undefined;
-      setError(msg || "Falha ao criar vaga");
+      setError(msg || t("newSpot.createFailed"));
     } finally {
       setLoading(false);
     }
@@ -93,9 +88,9 @@ export default function NewSpotPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
       <button onClick={() => router.back()} className="mb-3 text-sm text-blue-600 hover:underline">
-        &larr; Back
+        &larr; {t("common.back")}
       </button>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Add New Spot</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">{t("newSpot.title")}</h1>
 
       {error && (
         <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
@@ -104,7 +99,7 @@ export default function NewSpotPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
-            Name
+            {t("newSpot.name")}
           </label>
           <input
             id="name"
@@ -113,13 +108,13 @@ export default function NewSpotPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            placeholder="e.g., Rua Augusta parking"
+            placeholder={t("newSpot.namePlaceholder")}
           />
         </div>
 
         <div>
           <label htmlFor="type" className="mb-1 block text-sm font-medium text-gray-700">
-            Type
+            {t("newSpot.type")}
           </label>
           <select
             id="type"
@@ -127,9 +122,9 @@ export default function NewSpotPage() {
             onChange={(e) => setType(e.target.value as SpotType)}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           >
-            {SPOT_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            {SPOT_TYPES.map((st) => (
+              <option key={st} value={st}>
+                {t(`type.${st}` as any)}
               </option>
             ))}
           </select>
@@ -138,7 +133,7 @@ export default function NewSpotPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="priceMín" className="mb-1 block text-sm font-medium text-gray-700">
-              Mín Price (R$)
+              {t("newSpot.minPrice")}
             </label>
             <input
               id="priceMín"
@@ -152,7 +147,7 @@ export default function NewSpotPage() {
           </div>
           <div>
             <label htmlFor="priceMáx" className="mb-1 block text-sm font-medium text-gray-700">
-              Máx Price (R$)
+              {t("newSpot.maxPrice")}
             </label>
             <input
               id="priceMáx"
@@ -168,7 +163,7 @@ export default function NewSpotPage() {
 
         <div>
           <label htmlFor="estimatedSpots" className="mb-1 block text-sm font-medium text-gray-700">
-            Vagas Estimadas (optional)
+            {t("newSpot.estimated")}
           </label>
           <input
             id="estimatedSpots"
@@ -177,7 +172,7 @@ export default function NewSpotPage() {
             value={estimatedSpots}
             onChange={(e) => setEstimatedSpots(e.target.value)}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            placeholder="Number of parking spots"
+            placeholder={t("newSpot.estimatedPlaceholder")}
           />
         </div>
 
@@ -188,12 +183,12 @@ export default function NewSpotPage() {
             onChange={(e) => setRequiresBooking(e.target.checked)}
             className="rounded text-blue-600"
           />
-          <span className="text-sm text-gray-700">Requires booking</span>
+          <span className="text-sm text-gray-700">{t("newSpot.booking")}</span>
         </label>
 
         <div>
           <label htmlFor="notes" className="mb-1 block text-sm font-medium text-gray-700">
-            Notes (optional)
+            {t("newSpot.notes")}
           </label>
           <textarea
             id="notes"
@@ -201,14 +196,14 @@ export default function NewSpotPage() {
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            placeholder="Any useful information..."
+            placeholder={t("newSpot.notesPlaceholder")}
           />
         </div>
 
         {/* Location Picker */}
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Localização (clique no mapa)
+            {t("newSpot.location")}
           </label>
           <div className="h-64 overflow-hidden rounded-md border border-gray-300">
             <LocationPicker
@@ -220,7 +215,7 @@ export default function NewSpotPage() {
           </div>
           {latitude && longitude && (
             <p className="mt-1 text-xs text-gray-500">
-              Selected: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+              {t("common.selected")}: {latitude.toFixed(6)}, {longitude.toFixed(6)}
             </p>
           )}
         </div>
@@ -230,7 +225,7 @@ export default function NewSpotPage() {
           disabled={loading}
           className="w-full rounded-md bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Criando..." : "Criar Vaga"}
+          {loading ? t("newSpot.creating") : t("newSpot.create")}
         </button>
       </form>
     </div>

@@ -30,19 +30,19 @@ export interface MapFilters {
 const ALL_TRUST: TrustLevel[] = ["HIGH", "MEDIUM", "LOW", "NO_DATA"];
 const ALL_TYPES: SpotType[] = ["STREET", "PARKING_LOT", "MALL", "TERRAIN", "ZONA_AZUL"];
 
-const TRUST_META: Record<TrustLevel, { label: string; color: string; dot: string }> = {
-  HIGH: { label: "Alta", color: "text-green-600", dot: "bg-green-500" },
-  MEDIUM: { label: "Média", color: "text-yellow-600", dot: "bg-yellow-500" },
-  LOW: { label: "Baixa", color: "text-orange-600", dot: "bg-orange-500" },
-  NO_DATA: { label: "Sem dados", color: "text-indigo-600", dot: "bg-indigo-500" },
+const TRUST_META: Record<TrustLevel, { color: string; dot: string }> = {
+  HIGH: { color: "text-green-600", dot: "bg-green-500" },
+  MEDIUM: { color: "text-yellow-600", dot: "bg-yellow-500" },
+  LOW: { color: "text-orange-600", dot: "bg-orange-500" },
+  NO_DATA: { color: "text-indigo-600", dot: "bg-indigo-500" },
 };
 
-const TYPE_META: Record<SpotType, { label: string; icon: string }> = {
-  STREET: { label: "Rua", icon: "🛣" },
-  PARKING_LOT: { label: "Estacionamento", icon: "🅿️" },
-  MALL: { label: "Shopping", icon: "🏬" },
-  TERRAIN: { label: "Terreno", icon: "🏗" },
-  ZONA_AZUL: { label: "Zona Azul", icon: "🔵" },
+const TYPE_ICONS: Record<SpotType, string> = {
+  STREET: "🛣",
+  PARKING_LOT: "🅿️",
+  MALL: "🏬",
+  TERRAIN: "🏗",
+  ZONA_AZUL: "🔵",
 };
 
 export default function HomePage() {
@@ -153,11 +153,11 @@ function HomePageInner() {
       <div className="absolute top-[4.5rem] right-4 z-[1000] flex overflow-hidden rounded-lg bg-white shadow-lg">
         <button onClick={() => setViewMode("map")}
           className={`px-3 py-2 text-sm font-medium ${viewMode === "map" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"}`}>
-          🗺 Mapa
+          {t("nav.map")}
         </button>
         <button onClick={() => setViewMode("list")}
           className={`px-3 py-2 text-sm font-medium ${viewMode === "list" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"}`}>
-          📋 Lista
+          {t("map.list")}
         </button>
       </div>
 
@@ -168,7 +168,7 @@ function HomePageInner() {
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
-        Filtros
+        {t("map.filters")}
         {activeFilterCount > 0 && (
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white">
             {activeFilterCount}
@@ -180,27 +180,27 @@ function HomePageInner() {
       {filtersOpen && (
         <div className="absolute top-[7rem] left-4 z-[1000] w-72 rounded-lg bg-white p-4 shadow-xl">
           {/* Trust Level */}
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Confiança</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{t("map.trustLevels")}</p>
           <div className="mb-4 space-y-1.5">
             {ALL_TRUST.map(level => (
               <label key={level} className="flex cursor-pointer items-center gap-2 text-sm">
                 <input type="checkbox" checked={filters.trustLevels.has(level)}
                   onChange={() => toggleTrust(level)} className="rounded" />
                 <span className={`h-3 w-3 rounded-full ${TRUST_META[level].dot}`} />
-                <span className={TRUST_META[level].color}>{TRUST_META[level].label}</span>
+                <span className={TRUST_META[level].color}>{t(`trust.${level}` as any)}</span>
               </label>
             ))}
           </div>
 
           {/* Spot Type */}
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Tipo de vaga</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{t("map.spotTypes")}</p>
           <div className="mb-4 space-y-1.5">
             {ALL_TYPES.map(type => (
               <label key={type} className="flex cursor-pointer items-center gap-2 text-sm">
                 <input type="checkbox" checked={filters.spotTypes.has(type)}
                   onChange={() => toggleType(type)} className="rounded" />
-                <span>{TYPE_META[type].icon}</span>
-                <span>{TYPE_META[type].label}</span>
+                <span>{TYPE_ICONS[type]}</span>
+                <span>{t(`type.${type}` as any)}</span>
               </label>
             ))}
           </div>
@@ -209,12 +209,12 @@ function HomePageInner() {
           <label className="flex cursor-pointer items-center gap-2 border-t border-gray-100 pt-3 text-sm">
             <input type="checkbox" checked={filters.freeOnly}
               onChange={() => setFilters(prev => ({ ...prev, freeOnly: !prev.freeOnly }))} className="rounded" />
-            <span>Somente grátis</span>
+            <span>{t("map.freeOnly")}</span>
           </label>
 
           <button onClick={() => setFiltersOpen(false)}
             className="mt-3 w-full rounded-md bg-blue-600 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
-            Aplicar
+            {t("common.apply")}
           </button>
         </div>
       )}
@@ -225,7 +225,7 @@ function HomePageInner() {
           {ALL_TRUST.map(level => (
             <span key={level} className="flex items-center gap-1">
               <span className={`inline-block h-2.5 w-2.5 rounded-full ${TRUST_META[level].dot}`} />
-              {TRUST_META[level].label}
+              {t(`trust.${level}` as any)}
             </span>
           ))}
         </div>
@@ -264,10 +264,9 @@ function HomePageInner() {
           <button
             onClick={() => {
               if (nearbySpots.length === 0) {
-                alert("Nenhuma vaga próxima encontrada");
+                alert(t("map.noNearbySpots"));
                 return;
               }
-              // Find nearest spot
               const sorted = [...nearbySpots].sort((a, b) => {
                 const distA = Math.hypot(a.latitude - (userPos?.lat || 0), a.longitude - (userPos?.lng || 0));
                 const distB = Math.hypot(b.latitude - (userPos?.lat || 0), b.longitude - (userPos?.lng || 0));
@@ -276,13 +275,13 @@ function HomePageInner() {
               setQuickReportSpot(sorted[0]);
             }}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg shadow-lg transition hover:bg-green-700"
-            title="Relatar vaga próxima"
+            title={t("map.reportNearby")}
           >
             📍
           </button>
           <Link href="/spots/new"
             className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-lg transition hover:bg-blue-700"
-            title="Adicionar vaga">
+            title={t("map.addSpot")}>
             +
           </Link>
         </div>
@@ -297,7 +296,7 @@ function HomePageInner() {
           onClose={() => setQuickReportSpot(null)}
           onSuccess={() => {
             setQuickReportSpot(null);
-            alert("Relato enviado! +5 pontos 🎉");
+            alert(t("report.successPoints"));
           }}
         />
       )}

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { spotsApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { t } from "@/lib/i18n";
 import type { SpotResponse, Page } from "@/types/api";
 import SpotCard from "@/components/spots/SpotCard";
 
@@ -38,10 +39,10 @@ export default function MySpotsPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">My Spots</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">{t("mySpots.title")}</h1>
 
       {loading ? (
-        <div className="text-center text-sm text-gray-500">Loading...</div>
+        <div className="text-center text-sm text-gray-500">{t("common.loading")}</div>
       ) : spots && spots.content.length > 0 ? (
         <>
           <div className="space-y-3">
@@ -57,24 +58,24 @@ export default function MySpotsPage() {
                 disabled={spots.first}
                 className="rounded-md bg-gray-100 px-3 py-1 text-sm disabled:opacity-50"
               >
-                Previous
+                {t("common.previous")}
               </button>
               <span className="text-sm text-gray-500">
-                Page {spots.number + 1} of {spots.totalPages}
+                {t("common.page")} {spots.number + 1} {t("common.of")} {spots.totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={spots.last}
                 className="rounded-md bg-gray-100 px-3 py-1 text-sm disabled:opacity-50"
               >
-                Next
+                {t("common.next")}
               </button>
             </div>
           )}
         </>
       ) : (
         <p className="text-center text-sm text-gray-500">
-          You haven&apos;t created any spots yet.
+          {t("mySpots.empty")}
         </p>
       )}
     </div>

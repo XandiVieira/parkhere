@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { usersApi, spotsApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { t } from "@/lib/i18n";
 import type { SpotResponse, Page } from "@/types/api";
 import SpotCard from "@/components/spots/SpotCard";
 
@@ -47,10 +48,10 @@ export default function FavoritesPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Favorites</h1>
+      <h1 className="mb-6 text-2xl font-bold text-gray-900">{t("favorites.title")}</h1>
 
       {loading ? (
-        <div className="text-center text-sm text-gray-500">Loading...</div>
+        <div className="text-center text-sm text-gray-500">{t("common.loading")}</div>
       ) : favorites && favorites.content.length > 0 ? (
         <>
           <div className="space-y-3">
@@ -63,7 +64,7 @@ export default function FavoritesPage() {
                     onClick={() => handleRemoveFavorite(spot.id)}
                     className="text-sm text-red-600 hover:underline"
                   >
-                    Remove from favorites
+                    {t("favorites.removeFromFavorites")}
                   </button>
                 }
               />
@@ -77,24 +78,24 @@ export default function FavoritesPage() {
                 disabled={favorites.first}
                 className="rounded-md bg-gray-100 px-3 py-1 text-sm disabled:opacity-50"
               >
-                Previous
+                {t("common.previous")}
               </button>
               <span className="text-sm text-gray-500">
-                Page {favorites.number + 1} of {favorites.totalPages}
+                {t("common.page")} {favorites.number + 1} {t("common.of")} {favorites.totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={favorites.last}
                 className="rounded-md bg-gray-100 px-3 py-1 text-sm disabled:opacity-50"
               >
-                Next
+                {t("common.next")}
               </button>
             </div>
           )}
         </>
       ) : (
         <p className="text-center text-sm text-gray-500">
-          Nenhum favorito ainda. Navegue pelo mapa e favorite as vagas que gostar!
+          {t("favorites.emptyMessage")}
         </p>
       )}
     </div>

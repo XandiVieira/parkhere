@@ -5,35 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usersApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
-import type { GamificationResponse, BadgeType, SpotType, TrustLevel } from "@/types/api";
 import { t } from "@/lib/i18n";
+import type { GamificationResponse, BadgeType, SpotType, TrustLevel } from "@/types/api";
 
-const SPOT_TYPES: { value: SpotType; label: string }[] = [
-  { value: "STREET", label: "Rua" },
-  { value: "PARKING_LOT", label: "Estacionamento" },
-  { value: "MALL", label: "Shopping" },
-  { value: "TERRAIN", label: "Terreno" },
-  { value: "ZONA_AZUL", label: "Zona Azul" },
-];
-const TRUST_LEVELS: { value: TrustLevel; label: string }[] = [
-  { value: "HIGH", label: "Alta" },
-  { value: "MEDIUM", label: "Média" },
-  { value: "LOW", label: "Baixa" },
-  { value: "NO_DATA", label: "Sem dados" },
-];
-
-const BADGE_LABELS: Record<BadgeType, string> = {
-  FIRST_STEPS: "Primeiros Passos",
-  REGULAR: "Frequente",
-  VETERAN: "Veterano",
-  CENTURION: "Centurião",
-  SPOT_DISCOVERER: "Descobridor",
-  CARTOGRAPHER: "Cartógrafo",
-  RELIABLE: "Confiável",
-  NIGHT_OWL: "Coruja",
-  EARLY_BIRD: "Madrugador",
-  COMMUNITY_GUARDIAN: "Guardião",
-};
+const SPOT_TYPES: SpotType[] = ["STREET", "PARKING_LOT", "MALL", "TERRAIN", "ZONA_AZUL"];
+const TRUST_LEVELS: TrustLevel[] = ["HIGH", "MEDIUM", "LOW", "NO_DATA"];
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -48,14 +24,16 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingPic, setUploadingPic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [prefTypes, setPrefTypes] = useState<Set<string>>(new Set(SPOT_TYPES.map(s => s.value)));
-  const [prefTrust, setPrefTrust] = useState<Set<string>>(new Set(TRUST_LEVELS.map(s => s.value)));
+  const [prefTypes, setPrefTypes] = useState<Set<string>>(new Set(SPOT_TYPES));
+  const [prefTrust, setPrefTrust] = useState<Set<string>>(new Set(TRUST_LEVELS));
   const [prefFreeOnly, setPrefFreeOnly] = useState(false);
   const [prefSaving, setPrefSaving] = useState(false);
   const [prefMsg, setPrefMsg] = useState("");
+  const [prefSuccess, setPrefSuccess] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) { router.push("/login"); return; }
@@ -82,14 +60,13 @@ export default function ProfilePage() {
     setProfileLoading(true);
     try {
       await usersApi.updateProfile(editName, editNickname || null);
-      // The API returns UserResponse - update auth store
       if (user) {
         const token = localStorage.getItem("token");
         if (token) login(token, { ...user, name: editName, nickname: editNickname || null });
       }
       setEditingProfile(false);
     } catch {
-      setProfileError("Falha ao atualizar perfil");
+      setProfileError(t("profile.updateFailed"));
     } finally {
       setProfileLoading(false);
     }
@@ -106,7 +83,7 @@ export default function ProfilePage() {
         if (token) login(token, { ...user, profilePicUrl: res.data.profilePicUrl });
       }
     } catch {
-      alert("Falha ao enviar foto");
+      alert(t("profile.photoUploadFailed"));
     } finally {
       setUploadingPic(false);
     }
@@ -115,15 +92,18 @@ export default function ProfilePage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordMsg("");
-    if (newPassword.length < 8) { setPasswordMsg("Senha deve ter pelo menos 8 caracteres"); return; }
+    setPasswordSuccess(false);
+    if (newPassword.length < 8) { setPasswordMsg(t("profile.passwordMinLength")); return; }
     setPasswordLoading(true);
     try {
       await usersApi.changePassword(currentPassword, newPassword);
-      setPasswordMsg("Senha alterada com sucesso!");
+      setPasswordMsg(t("profile.passwordChanged"));
+      setPasswordSuccess(true);
       setCurrentPassword("");
       setNewPassword("");
     } catch {
-      setPasswordMsg("Falha ao alterar senha");
+      setPasswordMsg(t("profile.passwordChangeFailed"));
+      setPasswordSuccess(false);
     } finally {
       setPasswordLoading(false);
     }
@@ -145,7 +125,7 @@ export default function ProfilePage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="group relative h-20 w-20 overflow-hidden rounded-full border-2 border-gray-200 hover:border-blue-400"
-              title="Alterar foto"
+              title={t("profile.changePhoto")}
             >
               {picUrl ? (
                 <img src={picUrl} alt="" className="h-full w-full object-cover" />
@@ -162,7 +142,7 @@ export default function ProfilePage() {
               </div>
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePicUpload} />
-            {uploadingPic && <span className="text-xs text-gray-500">Enviando...</span>}
+            {uploadingPic && <span className="text-xs text-gray-500">{t("common.uploading")}</span>}
           </div>
 
           {/* Name + Nickname */}
@@ -170,14 +150,14 @@ export default function ProfilePage() {
             {editingProfile ? (
               <form onSubmit={handleUpdateProfile} className="space-y-2">
                 <div>
-                  <label className="text-xs text-gray-500">Nome</label>
+                  <label className="text-xs text-gray-500">{t("auth.name")}</label>
                   <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required
                     className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Apelido</label>
+                  <label className="text-xs text-gray-500">{t("profile.nickname")}</label>
                   <input type="text" value={editNickname} onChange={(e) => setEditNickname(e.target.value)} maxLength={50}
-                    placeholder="Como quer ser chamado?"
+                    placeholder={t("profile.nicknamePlaceholder")}
                     className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div className="flex gap-2">
@@ -186,7 +166,7 @@ export default function ProfilePage() {
                     {t("profile.save")}
                   </button>
                   <button type="button" onClick={() => { setEditingProfile(false); setEditName(user.name); setEditNickname(user.nickname || ""); }}
-                    className="text-xs text-gray-500 hover:underline">Cancelar</button>
+                    className="text-xs text-gray-500 hover:underline">{t("common.cancel")}</button>
                 </div>
                 {profileError && <p className="text-xs text-red-600">{profileError}</p>}
               </form>
@@ -194,7 +174,7 @@ export default function ProfilePage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold text-gray-900">{user.name}</h2>
-                  <button onClick={() => setEditingProfile(true)} className="text-xs text-blue-600 hover:underline">Editar</button>
+                  <button onClick={() => setEditingProfile(true)} className="text-xs text-blue-600 hover:underline">{t("common.edit")}</button>
                 </div>
                 {user.nickname && <p className="text-sm text-gray-600">@{user.nickname}</p>}
                 <p className="mt-1 text-sm text-gray-500">{user.email}</p>
@@ -227,39 +207,38 @@ export default function ProfilePage() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
           <button type="submit" disabled={passwordLoading}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-            {passwordLoading ? "Alterando..." : t("profile.change")}
+            {passwordLoading ? t("profile.changing") : t("profile.change")}
           </button>
-          {passwordMsg && <p className={`text-sm ${passwordMsg.includes("sucesso") ? "text-green-600" : "text-red-600"}`}>{passwordMsg}</p>}
+          {passwordMsg && <p className={`text-sm ${passwordSuccess ? "text-green-600" : "text-red-600"}`}>{passwordMsg}</p>}
         </form>
       </div>
 
-      {/* Gamification */}
       {/* Preferences */}
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Preferências do Mapa</h3>
-        <p className="mb-3 text-sm text-gray-500">Filtros padrão aplicados ao abrir o mapa</p>
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">{t("profile.mapPreferences")}</h3>
+        <p className="mb-3 text-sm text-gray-500">{t("profile.mapPreferencesDesc")}</p>
 
         <div className="mb-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Tipos de vaga</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{t("map.spotTypes")}</p>
           <div className="flex flex-wrap gap-2">
             {SPOT_TYPES.map(st => (
-              <label key={st.value} className="flex items-center gap-1.5 text-sm">
-                <input type="checkbox" className="rounded" checked={prefTypes.has(st.value)}
-                  onChange={() => setPrefTypes(prev => { const n = new Set(prev); n.has(st.value) ? n.delete(st.value) : n.add(st.value); return n; })} />
-                {st.label}
+              <label key={st} className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" className="rounded" checked={prefTypes.has(st)}
+                  onChange={() => setPrefTypes(prev => { const n = new Set(prev); n.has(st) ? n.delete(st) : n.add(st); return n; })} />
+                {t(`type.${st}` as any)}
               </label>
             ))}
           </div>
         </div>
 
         <div className="mb-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Níveis de confiança</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{t("map.trustLevels")}</p>
           <div className="flex flex-wrap gap-2">
             {TRUST_LEVELS.map(tl => (
-              <label key={tl.value} className="flex items-center gap-1.5 text-sm">
-                <input type="checkbox" className="rounded" checked={prefTrust.has(tl.value)}
-                  onChange={() => setPrefTrust(prev => { const n = new Set(prev); n.has(tl.value) ? n.delete(tl.value) : n.add(tl.value); return n; })} />
-                {tl.label}
+              <label key={tl} className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" className="rounded" checked={prefTrust.has(tl)}
+                  onChange={() => setPrefTrust(prev => { const n = new Set(prev); n.has(tl) ? n.delete(tl) : n.add(tl); return n; })} />
+                {t(`trust.${tl}` as any)}
               </label>
             ))}
           </div>
@@ -268,7 +247,7 @@ export default function ProfilePage() {
         <label className="mb-4 flex items-center gap-2 text-sm">
           <input type="checkbox" className="rounded" checked={prefFreeOnly}
             onChange={() => setPrefFreeOnly(!prefFreeOnly)} />
-          Somente vagas grátis
+          {t("profile.freeOnly")}
         </label>
 
         <button
@@ -276,21 +255,27 @@ export default function ProfilePage() {
           onClick={async () => {
             setPrefSaving(true);
             setPrefMsg("");
+            setPrefSuccess(false);
             try {
               await usersApi.updatePreferences({
                 defaultSpotTypes: Array.from(prefTypes),
                 defaultTrustLevels: Array.from(prefTrust),
                 freeOnly: prefFreeOnly,
               });
-              setPrefMsg("Preferências salvas!");
-            } catch { setPrefMsg("Falha ao salvar"); }
-            finally { setPrefSaving(false); }
+              setPrefMsg(t("profile.preferencesSaved"));
+              setPrefSuccess(true);
+            } catch {
+              setPrefMsg(t("profile.saveFailed"));
+              setPrefSuccess(false);
+            } finally {
+              setPrefSaving(false);
+            }
           }}
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {prefSaving ? "Salvando..." : "Salvar preferências"}
+          {prefSaving ? t("common.saving") : t("profile.savePreferences")}
         </button>
-        {prefMsg && <p className={`mt-2 text-sm ${prefMsg.includes("salvas") ? "text-green-600" : "text-red-600"}`}>{prefMsg}</p>}
+        {prefMsg && <p className={`mt-2 text-sm ${prefSuccess ? "text-green-600" : "text-red-600"}`}>{prefMsg}</p>}
       </div>
 
       {/* Gamification */}
@@ -298,7 +283,7 @@ export default function ProfilePage() {
         <div className="text-center text-sm text-gray-500">{t("common.loading")}</div>
       ) : gamification ? (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Gamificação</h3>
+          <h3 className="mb-4 text-lg font-semibold text-gray-900">{t("profile.gamification")}</h3>
 
           <div className="mb-4 grid grid-cols-3 gap-4">
             <div className="rounded-lg bg-blue-50 p-3 text-center">
@@ -322,7 +307,7 @@ export default function ProfilePage() {
                 <div key={badge.type} className="flex items-center gap-2 rounded-md bg-yellow-50 px-3 py-2">
                   <span className="text-lg">🏆</span>
                   <div>
-                    <p className="text-xs font-medium text-gray-800">{BADGE_LABELS[badge.type] || badge.type}</p>
+                    <p className="text-xs font-medium text-gray-800">{t(`badge.${badge.type}` as any)}</p>
                     <p className="text-[10px] text-gray-400">{new Date(badge.earnedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
