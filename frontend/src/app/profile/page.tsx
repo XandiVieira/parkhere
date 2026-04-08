@@ -5,8 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usersApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
-import type { GamificationResponse, BadgeType } from "@/types/api";
+import type { GamificationResponse, BadgeType, SpotType, TrustLevel } from "@/types/api";
 import { t } from "@/lib/i18n";
+
+const SPOT_TYPES: { value: SpotType; label: string }[] = [
+  { value: "STREET", label: "Rua" },
+  { value: "PARKING_LOT", label: "Estacionamento" },
+  { value: "MALL", label: "Shopping" },
+  { value: "TERRAIN", label: "Terreno" },
+  { value: "ZONA_AZUL", label: "Zona Azul" },
+];
+const TRUST_LEVELS: { value: TrustLevel; label: string }[] = [
+  { value: "HIGH", label: "Alta" },
+  { value: "MEDIUM", label: "Média" },
+  { value: "LOW", label: "Baixa" },
+  { value: "NO_DATA", label: "Sem dados" },
+];
 
 const BADGE_LABELS: Record<BadgeType, string> = {
   FIRST_STEPS: "Primeiros Passos",
@@ -37,6 +51,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploadingPic, setUploadingPic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [prefTypes, setPrefTypes] = useState<Set<string>>(new Set());
+  const [prefTrust, setPrefTrust] = useState<Set<string>>(new Set());
+  const [prefFreeOnly, setPrefFreeOnly] = useState(false);
+  const [prefSaving, setPrefSaving] = useState(false);
+  const [prefMsg, setPrefMsg] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) { router.push("/login"); return; }
@@ -48,6 +67,13 @@ export default function ProfilePage() {
       .then((res) => setGamification(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
+    usersApi.getPreferences()
+      .then((res) => {
+        const d = res.data;
+        if (d.defaultSpotTypes?.length) setPrefTypes(new Set(d.defaultSpotTypes));
+        if (d.defaultTrustLevels?.length) setPrefTrust(new Set(d.defaultTrustLevels));
+        setPrefFreeOnly(d.freeOnly || false);
+      }).catch(() => {});
   }, [isAuthenticated, user, router]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -205,6 +231,66 @@ export default function ProfilePage() {
           </button>
           {passwordMsg && <p className={`text-sm ${passwordMsg.includes("sucesso") ? "text-green-600" : "text-red-600"}`}>{passwordMsg}</p>}
         </form>
+      </div>
+
+      {/* Gamification */}
+      {/* Preferences */}
+      <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6">
+        <h3 className="mb-4 text-lg font-semibold text-gray-900">Preferências do Mapa</h3>
+        <p className="mb-3 text-sm text-gray-500">Filtros padrão aplicados ao abrir o mapa</p>
+
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Tipos de vaga</p>
+          <div className="flex flex-wrap gap-2">
+            {SPOT_TYPES.map(st => (
+              <label key={st.value} className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" className="rounded" checked={prefTypes.has(st.value)}
+                  onChange={() => setPrefTypes(prev => { const n = new Set(prev); n.has(st.value) ? n.delete(st.value) : n.add(st.value); return n; })} />
+                {st.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Níveis de confiança</p>
+          <div className="flex flex-wrap gap-2">
+            {TRUST_LEVELS.map(tl => (
+              <label key={tl.value} className="flex items-center gap-1.5 text-sm">
+                <input type="checkbox" className="rounded" checked={prefTrust.has(tl.value)}
+                  onChange={() => setPrefTrust(prev => { const n = new Set(prev); n.has(tl.value) ? n.delete(tl.value) : n.add(tl.value); return n; })} />
+                {tl.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <label className="mb-4 flex items-center gap-2 text-sm">
+          <input type="checkbox" className="rounded" checked={prefFreeOnly}
+            onChange={() => setPrefFreeOnly(!prefFreeOnly)} />
+          Somente vagas grátis
+        </label>
+
+        <button
+          disabled={prefSaving}
+          onClick={async () => {
+            setPrefSaving(true);
+            setPrefMsg("");
+            try {
+              await usersApi.updatePreferences({
+                defaultSpotTypes: Array.from(prefTypes),
+                defaultTrustLevels: Array.from(prefTrust),
+                freeOnly: prefFreeOnly,
+              });
+              setPrefMsg("Preferências salvas!");
+            } catch { setPrefMsg("Falha ao salvar"); }
+            finally { setPrefSaving(false); }
+          }}
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {prefSaving ? "Salvando..." : "Salvar preferências"}
+        </button>
+        {prefMsg && <p className={`mt-2 text-sm ${prefMsg.includes("salvas") ? "text-green-600" : "text-red-600"}`}>{prefMsg}</p>}
       </div>
 
       {/* Gamification */}

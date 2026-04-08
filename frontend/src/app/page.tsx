@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import axios from "axios";
 import { t } from "@/lib/i18n";
+import { usersApi } from "@/lib/api";
 import type { TrustLevel, SpotType, SpotResponse } from "@/types/api";
 import QuickReportModal from "@/components/reports/QuickReportModal";
 import SpotListView from "@/components/spots/SpotListView";
@@ -68,6 +69,17 @@ function HomePageInner() {
   const [nearbySpots, setNearbySpots] = useState<SpotResponse[]>([]);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
   const [quickReportSpot, setQuickReportSpot] = useState<SpotResponse | null>(null);
+
+  // Load user preferences as default filters
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    usersApi.getPreferences().then(res => {
+      const d = res.data;
+      const types = d.defaultSpotTypes?.length ? new Set(d.defaultSpotTypes as SpotType[]) : new Set(ALL_TYPES);
+      const trust = d.defaultTrustLevels?.length ? new Set(d.defaultTrustLevels as TrustLevel[]) : new Set(ALL_TRUST);
+      setFilters({ trustLevels: trust, spotTypes: types, freeOnly: d.freeOnly || false });
+    }).catch(() => {});
+  }, [isAuthenticated]);
 
   // Fly to coordinates from URL params — retry until flyToRef is ready
   const pendingFlyTo = useRef<{lat: number; lng: number} | null>(null);

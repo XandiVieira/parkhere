@@ -128,6 +128,12 @@ export const usersApi = {
   getFavorites: (page = 0, size = 20) =>
     api.get<Page<SpotResponse>>("/users/me/favorites", { params: { page, size } }),
 
+  getPreferences: () =>
+    api.get("/users/me/preferences"),
+
+  updatePreferences: (data: { defaultSpotTypes: string[]; defaultTrustLevels: string[]; freeOnly: boolean }) =>
+    api.put("/users/me/preferences", data),
+
   getGamification: () =>
     api.get<GamificationResponse>("/users/me/gamification"),
 
