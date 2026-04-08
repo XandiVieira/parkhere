@@ -48,6 +48,7 @@ import type { MapFilters } from "@/app/page";
 interface MapViewProps {
   filters?: MapFilters;
   onFlyToReady?: (flyTo: (lat: number, lng: number) => void) => void;
+  onSpotsLoaded?: (spots: SpotResponse[], userLat: number, userLng: number) => void;
 }
 
 function MapEventHandler({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number, map: L.Map) => void }) {
@@ -60,7 +61,7 @@ function MapEventHandler({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number, 
   return null;
 }
 
-export default function MapView({ filters, onFlyToReady }: MapViewProps) {
+export default function MapView({ filters, onFlyToReady, onSpotsLoaded }: MapViewProps) {
   const [spots, setSpots] = useState<SpotResponse[]>([]);
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [loading, setLoading] = useState(false);
@@ -98,6 +99,7 @@ export default function MapView({ filters, onFlyToReady }: MapViewProps) {
         }
         const res = await spotsApi.search(lat, lng, radius);
         setSpots(res.data.content);
+        if (onSpotsLoaded) onSpotsLoaded(res.data.content, lat, lng);
       } catch {
         // silently fail
       } finally {

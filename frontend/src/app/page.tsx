@@ -7,7 +7,8 @@ import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import axios from "axios";
 import { t } from "@/lib/i18n";
-import type { TrustLevel, SpotType } from "@/types/api";
+import type { TrustLevel, SpotType, SpotResponse } from "@/types/api";
+import QuickReportModal from "@/components/reports/QuickReportModal";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -62,6 +63,9 @@ function HomePageInner() {
     freeOnly: false,
   });
   const flyToRef = useRef<((lat: number, lng: number) => void) | null>(null);
+  const [nearbySpots, setNearbySpots] = useState<SpotResponse[]>([]);
+  const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [quickReportSpot, setQuickReportSpot] = useState<SpotResponse | null>(null);
 
   // Fly to coordinates from URL params — retry until flyToRef is ready
   const pendingFlyTo = useRef<{lat: number; lng: number} | null>(null);
@@ -210,16 +214,54 @@ function HomePageInner() {
             fn(pendingFlyTo.current.lat, pendingFlyTo.current.lng);
             pendingFlyTo.current = null;
           }
+        }} onSpotsLoaded={(spots, lat, lng) => {
+          setNearbySpots(spots);
+          setUserPos({ lat, lng });
         }} />
       </div>
 
-      {/* Floating add button */}
+      {/* Floating action buttons */}
       {isAuthenticated && (
-        <Link href="/spots/new"
-          className="fixed right-6 bottom-6 z-[1000] flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-lg transition hover:bg-blue-700"
-          title="Adicionar vaga">
-          +
-        </Link>
+        <div className="fixed right-6 bottom-6 z-[1000] flex flex-col gap-3">
+          <button
+            onClick={() => {
+              if (nearbySpots.length === 0) {
+                alert("Nenhuma vaga próxima encontrada");
+                return;
+              }
+              // Find nearest spot
+              const sorted = [...nearbySpots].sort((a, b) => {
+                const distA = Math.hypot(a.latitude - (userPos?.lat || 0), a.longitude - (userPos?.lng || 0));
+                const distB = Math.hypot(b.latitude - (userPos?.lat || 0), b.longitude - (userPos?.lng || 0));
+                return distA - distB;
+              });
+              setQuickReportSpot(sorted[0]);
+            }}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg shadow-lg transition hover:bg-green-700"
+            title="Relatar vaga próxima"
+          >
+            📍
+          </button>
+          <Link href="/spots/new"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-lg transition hover:bg-blue-700"
+            title="Adicionar vaga">
+            +
+          </Link>
+        </div>
+      )}
+
+      {/* Quick Report Modal */}
+      {quickReportSpot && userPos && (
+        <QuickReportModal
+          spot={quickReportSpot}
+          userLat={userPos.lat}
+          userLng={userPos.lng}
+          onClose={() => setQuickReportSpot(null)}
+          onSuccess={() => {
+            setQuickReportSpot(null);
+            alert("Relato enviado! +5 pontos 🎉");
+          }}
+        />
       )}
     </div>
   );
