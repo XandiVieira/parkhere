@@ -14,6 +14,7 @@ public record UserResponse(
         Role role,
         double reputationScore,
         String profilePicUrl,
+        boolean emailVerified,
         LocalDateTime createdAt
 ) {
     public static UserResponse from(User user) {
@@ -28,6 +29,7 @@ public record UserResponse(
                 user.getRole(),
                 user.getReputationScore(),
                 picUrl,
+                user.isEmailVerified(),
                 user.getCreatedAt()
         );
     }

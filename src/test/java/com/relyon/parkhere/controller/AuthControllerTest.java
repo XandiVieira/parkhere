@@ -58,8 +58,11 @@ class AuthControllerTest {
     @MockitoBean
     private LocalizedMessageService localizedMessageService;
 
+    @MockitoBean
+    private com.relyon.parkhere.service.EmailVerificationService emailVerificationService;
+
     private UserResponse sampleUserResponse() {
-        return new UserResponse(UUID.randomUUID(), "John", null, "john@test.com", Role.USER, 0.0, null, LocalDateTime.now());
+        return new UserResponse(UUID.randomUUID(), "John", null, "john@test.com", Role.USER, 0.0, null, false, LocalDateTime.now());
     }
 
     @Test

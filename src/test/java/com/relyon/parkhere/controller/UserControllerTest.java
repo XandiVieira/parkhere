@@ -81,7 +81,7 @@ class UserControllerTest {
     @Test
     void getProfile_shouldReturn200() throws Exception {
         var user = buildUser();
-        var response = new UserResponse(user.getId(), "John", null, "john@test.com", Role.USER, 0.0, null, user.getCreatedAt());
+        var response = new UserResponse(user.getId(), "John", null, "john@test.com", Role.USER, 0.0, null, false, user.getCreatedAt());
         when(userService.getProfile(any(User.class))).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/users/me")
@@ -101,7 +101,7 @@ class UserControllerTest {
     void updateProfile_shouldReturn200() throws Exception {
         var user = buildUser();
         var request = new UpdateUserRequest("New Name", null);
-        var response = new UserResponse(user.getId(), "New Name", null, "john@test.com", Role.USER, 0.0, null, user.getCreatedAt());
+        var response = new UserResponse(user.getId(), "New Name", null, "john@test.com", Role.USER, 0.0, null, false, user.getCreatedAt());
         when(userService.updateProfile(any(User.class), any(UpdateUserRequest.class))).thenReturn(response);
 
         mockMvc.perform(put("/api/v1/users/me")

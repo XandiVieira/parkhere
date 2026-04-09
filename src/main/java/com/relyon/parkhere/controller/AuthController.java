@@ -6,6 +6,7 @@ import com.relyon.parkhere.dto.request.LoginRequest;
 import com.relyon.parkhere.dto.request.RegisterRequest;
 import com.relyon.parkhere.dto.request.ResetPasswordRequest;
 import com.relyon.parkhere.dto.response.AuthResponse;
+import com.relyon.parkhere.service.EmailVerificationService;
 import com.relyon.parkhere.service.GoogleAuthService;
 import com.relyon.parkhere.service.LocalizedMessageService;
 import com.relyon.parkhere.service.PasswordResetService;
@@ -14,10 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -30,6 +28,7 @@ public class AuthController {
     private final UserService userService;
     private final PasswordResetService passwordResetService;
     private final GoogleAuthService googleAuthService;
+    private final EmailVerificationService emailVerificationService;
     private final LocalizedMessageService messageService;
 
     @PostMapping("/register")
@@ -57,5 +56,23 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request.token(), request.newPassword());
         return ResponseEntity.ok(Map.of("message", messageService.translate("reset.password.success")));
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<Map<String, String>> verifyEmail(@RequestParam String token) {
+        var verified = emailVerificationService.verify(token);
+        if (verified) {
+            return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
+        }
+        return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired verification link"));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, String>> resendVerification(@RequestBody Map<String, String> body) {
+        var email = body.get("email");
+        if (email != null) {
+            userService.findByEmail(email).ifPresent(emailVerificationService::sendVerificationEmail);
+        }
+        return ResponseEntity.ok(Map.of("message", "If this email is registered, a verification email has been sent"));
     }
 }

@@ -30,6 +30,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final List<ImageStorageService> imageStorageServices;
+    private final EmailVerificationService emailVerificationService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -46,6 +47,7 @@ public class UserService {
         var savedUser = userRepository.save(user);
         var token = jwtService.generateToken(savedUser);
         log.info("New user registered: {}", savedUser.getEmail());
+        emailVerificationService.sendVerificationEmail(savedUser);
         return new AuthResponse(token, UserResponse.from(savedUser));
     }
 
@@ -82,6 +84,11 @@ public class UserService {
         var updatedUser = userRepository.save(user);
         log.info("Profile picture updated for user {}", updatedUser.getEmail());
         return UserResponse.from(updatedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Transactional

@@ -105,8 +105,17 @@ export const spotsApi = {
 
 // === Reports ===
 export const reportsApi = {
-  submit: (spotId: string, data: Record<string, unknown>) =>
-    api.post<ReportResponse>(`/spots/${spotId}/reports`, data),
+  submit: (spotId: string, data: Record<string, unknown>, images?: File[]) => {
+    if (images && images.length > 0) {
+      const formData = new FormData();
+      formData.append("report", new Blob([JSON.stringify(data)], { type: "application/json" }));
+      images.forEach(img => formData.append("images", img));
+      return api.post<ReportResponse>(`/spots/${spotId}/reports`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    }
+    return api.post<ReportResponse>(`/spots/${spotId}/reports`, data);
+  },
 
   getForSpot: (spotId: string, page = 0, size = 20) =>
     api.get<Page<ReportResponse>>(`/spots/${spotId}/reports`, { params: { page, size } }),
@@ -163,6 +172,33 @@ export const usersApi = {
 export const leaderboardApi = {
   get: (period: LeaderboardPeriod, category: LeaderboardCategory, periodKey?: string) =>
     api.get<LeaderboardResponse>("/leaderboards", { params: { period, category, periodKey } }),
+};
+
+// === Admin ===
+export const adminApi = {
+  getUsers: (page = 0, size = 20) =>
+    api.get("/admin/users", { params: { page, size } }),
+
+  getSpots: (page = 0, size = 20) =>
+    api.get("/admin/spots", { params: { page, size } }),
+
+  getReports: (page = 0, size = 20) =>
+    api.get("/admin/reports", { params: { page, size } }),
+
+  getStats: () =>
+    api.get<{ totalUsers: number; totalSpots: number; totalReports: number }>("/admin/stats"),
+
+  deactivateSpot: (id: string) =>
+    api.put(`/admin/spots/${id}/deactivate`),
+
+  deleteReport: (id: string) =>
+    api.delete(`/admin/reports/${id}`),
+
+  banUser: (id: string) =>
+    api.put(`/admin/users/${id}/ban`),
+
+  unbanUser: (id: string) =>
+    api.put(`/admin/users/${id}/unban`),
 };
 
 export default api;

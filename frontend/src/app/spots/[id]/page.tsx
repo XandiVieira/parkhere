@@ -31,7 +31,7 @@ export default function SpotDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const [spot, setSpot] = useState<SpotResponse | null>(null);
   const [summary, setSummary] = useState<SpotSummaryResponse | null>(null);
@@ -168,6 +168,11 @@ export default function SpotDetailPage({
           >
             🧭 {t("map.navigate")}
           </a>
+          {isAuthenticated && user && spot.createdBy === user.id && (
+            <a href={`/spots/edit?id=${spot.id}`} className="text-sm text-blue-600 hover:underline">
+              {t("common.edit")}
+            </a>
+          )}
         </div>
         <div className="flex items-start justify-between">
           <div>

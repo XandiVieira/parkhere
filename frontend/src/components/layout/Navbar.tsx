@@ -26,6 +26,7 @@ export default function Navbar() {
     { href: "/my-spots", label: t("nav.mySpots") },
     { href: "/favorites", label: t("nav.favorites") },
     { href: "/profile", label: t("nav.profile") },
+    ...(user?.role === "ADMIN" ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 
   const allLinks = isAuthenticated ? [...publicLinks, ...authLinks] : publicLinks;

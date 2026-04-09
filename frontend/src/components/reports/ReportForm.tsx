@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { reportsApi } from "@/lib/api";
 import { t } from "@/lib/i18n";
 import type { AvailabilityStatus } from "@/types/api";
@@ -17,9 +17,21 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
   const [safetyRating, setSafetyRating] = useState(3);
   const [informalCharge, setInformalCharge] = useState(false);
   const [note, setNote] = useState("");
+  const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImages(prev => [...prev, ...files].slice(0, 3));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,15 +52,17 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
     }
 
     try {
-      await reportsApi.submit(spotId, {
+      const reportData = {
         availabilityStatus: availability,
         estimatedPrice: estimatedPrice ? parseFloat(estimatedPrice) : null,
         safetyRating,
         informalChargeReported: informalCharge,
         note: note || null,
-        latitude,
-        longitude,
-      });
+        userLatitude: latitude,
+        userLongitude: longitude,
+      };
+
+      await reportsApi.submit(spotId, reportData, images.length > 0 ? images : undefined);
       setSuccess(true);
       setTimeout(onSuccess, 1500);
     } catch (err: unknown) {
@@ -78,7 +92,7 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
       )}
 
-      {/* Disponibilidade */}
+      {/* Availability */}
       <div>
         <label className="mb-2 block text-sm font-medium text-gray-700">{t("spot.availability")}</label>
         <div className="flex gap-3">
@@ -158,6 +172,29 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           placeholder={t("report.additionalNotes")}
         />
+      </div>
+
+      {/* Image Upload */}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">{t("report.addImages")}</label>
+        {images.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-2">
+            {images.map((file, i) => (
+              <div key={i} className="relative">
+                <img src={URL.createObjectURL(file)} alt="" className="h-16 w-16 rounded-md object-cover" />
+                <button type="button" onClick={() => removeImage(i)}
+                  className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">&times;</button>
+              </div>
+            ))}
+          </div>
+        )}
+        {images.length < 3 && (
+          <button type="button" onClick={() => fileInputRef.current?.click()}
+            className="rounded-md border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600">
+            + {t("report.addImages")}
+          </button>
+        )}
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
       </div>
 
       <div className="flex gap-3">

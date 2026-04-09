@@ -43,6 +43,9 @@ class UserServiceTest {
     @Mock
     private List<ImageStorageService> imageStorageServices;
 
+    @Mock
+    private EmailVerificationService emailVerificationService;
+
     @InjectMocks
     private UserService userService;
 
