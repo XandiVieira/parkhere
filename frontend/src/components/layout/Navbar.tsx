@@ -19,17 +19,25 @@ export default function Navbar() {
 
   const publicLinks = [
     { href: "/", label: t("nav.map") },
-    { href: "/leaderboards", label: t("nav.leaderboards") },
   ];
 
   const authLinks = [
-    { href: "/my-spots", label: t("nav.mySpots") },
     { href: "/favorites", label: t("nav.favorites") },
+    { href: "/my-spots", label: t("nav.mySpots") },
+  ];
+
+  const sharedLinks = [
+    { href: "/leaderboards", label: t("nav.leaderboards") },
+  ];
+
+  const profileLinks = [
     { href: "/profile", label: t("nav.profile") },
     ...(user?.role === "ADMIN" ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 
-  const allLinks = isAuthenticated ? [...publicLinks, ...authLinks] : publicLinks;
+  const allLinks = isAuthenticated
+    ? [...publicLinks, ...authLinks, ...sharedLinks, ...profileLinks]
+    : [...publicLinks, ...sharedLinks];
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
