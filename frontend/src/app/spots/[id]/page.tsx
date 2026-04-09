@@ -305,7 +305,7 @@ export default function SpotDetailPage({
               />
               <SummaryCard
                 label={t("spot.avgSafety")}
-                value={summary.avgSafetyRating !== null ? `${summary.avgSafetyRating.toFixed(1)}/5` : "N/A"}
+                value={summary.avgSafetyRating !== null ? `${Number.isInteger(summary.avgSafetyRating) ? summary.avgSafetyRating : summary.avgSafetyRating.toFixed(1)}/5` : "N/A"}
               />
               <SummaryCard
                 label={t("spot.informalCharge")}
@@ -433,7 +433,7 @@ export default function SpotDetailPage({
                             {hour.avgPrice !== null ? `R$${hour.avgPrice.toFixed(0)}` : "-"}
                           </td>
                           <td className="py-2 pr-4 text-gray-600">
-                            {hour.avgSafetyRating !== null ? `${hour.avgSafetyRating.toFixed(1)}/5` : "-"}
+                            {hour.avgSafetyRating !== null ? `${Number.isInteger(hour.avgSafetyRating) ? hour.avgSafetyRating : hour.avgSafetyRating.toFixed(1)}/5` : "-"}
                           </td>
                           <td className="py-2 text-gray-600">{hour.reportCount}</td>
                         </tr>
