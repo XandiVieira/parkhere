@@ -9,9 +9,10 @@ import { t } from "@/lib/i18n";
 interface SpotCardProps {
   spot: SpotResponse;
   actions?: React.ReactNode;
+  distanceLabel?: string;
 }
 
-export default function SpotCard({ spot, actions }: SpotCardProps) {
+export default function SpotCard({ spot, actions, distanceLabel }: SpotCardProps) {
   return (
     <Link
       href={`/spots/${spot.id}`}
@@ -27,7 +28,14 @@ export default function SpotCard({ spot, actions }: SpotCardProps) {
             <p className="text-sm text-gray-500">{t(`type.${spot.type}` as any)}</p>
           </div>
         </div>
-        <TrustBadge level={spot.trustLevel} />
+        <div className="flex flex-col items-end gap-1">
+          <TrustBadge level={spot.trustLevel} />
+          {distanceLabel && (
+            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700">
+              {distanceLabel}
+            </span>
+          )}
+        </div>
       </div>
 
       {spot.address && (

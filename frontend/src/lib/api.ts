@@ -50,9 +50,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
+      // Only clear auth state, don't redirect — public pages work without login
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

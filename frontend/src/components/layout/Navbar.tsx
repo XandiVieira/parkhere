@@ -14,16 +14,21 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     setMobileOpen(false);
-    router.push("/login");
+    router.push("/");
   };
 
-  const navLinks = [
+  const publicLinks = [
     { href: "/", label: t("nav.map") },
+    { href: "/leaderboards", label: t("nav.leaderboards") },
+  ];
+
+  const authLinks = [
     { href: "/my-spots", label: t("nav.mySpots") },
     { href: "/favorites", label: t("nav.favorites") },
     { href: "/profile", label: t("nav.profile") },
-    { href: "/leaderboards", label: t("nav.leaderboards") },
   ];
+
+  const allLinks = isAuthenticated ? [...publicLinks, ...authLinks] : publicLinks;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
@@ -36,13 +41,14 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
+          {allLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
+              {link.label}
+            </Link>
+          ))}
+
           {isAuthenticated ? (
             <>
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="text-sm font-medium text-gray-700 hover:text-blue-600">
-                  {link.label}
-                </Link>
-              ))}
               <div className="flex items-center gap-2">
                 {user?.profilePicUrl ? (
                   <img src={`${(process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080")}${user.profilePicUrl}`} alt="" className="h-7 w-7 rounded-full object-cover" />
@@ -79,26 +85,26 @@ export default function Navbar() {
 
       {mobileOpen && (
         <div className="border-t border-gray-200 bg-white px-4 pb-4 md:hidden">
-          {isAuthenticated ? (
-            <div className="flex flex-col gap-3 pt-3">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="text-sm font-medium text-gray-700" onClick={() => setMobileOpen(false)}>
-                  {link.label}
-                </Link>
-              ))}
+          <div className="flex flex-col gap-3 pt-3">
+            {allLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="text-sm font-medium text-gray-700" onClick={() => setMobileOpen(false)}>
+                {link.label}
+              </Link>
+            ))}
+            {isAuthenticated ? (
               <div className="border-t border-gray-100 pt-3">
                 <span className="text-sm text-gray-500">{user?.name}</span>
                 <button onClick={handleLogout} className="mt-2 w-full rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200">
                   {t("nav.logout")}
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3 pt-3">
-              <Link href="/login" className="text-sm font-medium text-gray-700" onClick={() => setMobileOpen(false)}>{t("nav.login")}</Link>
-              <Link href="/register" className="text-sm font-medium text-blue-600" onClick={() => setMobileOpen(false)}>{t("nav.register")}</Link>
-            </div>
-          )}
+            ) : (
+              <div className="border-t border-gray-100 pt-3 flex flex-col gap-2">
+                <Link href="/login" className="text-sm font-medium text-gray-700" onClick={() => setMobileOpen(false)}>{t("nav.login")}</Link>
+                <Link href="/register" className="text-sm font-medium text-blue-600" onClick={() => setMobileOpen(false)}>{t("nav.register")}</Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </nav>

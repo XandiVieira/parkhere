@@ -1,7 +1,7 @@
 "use client";
 
 import type { SpotResponse } from "@/types/api";
-import SpotCard from "./SpotCard";
+import SpotCard from "@/components/spots/SpotCard";
 import { t } from "@/lib/i18n";
 
 interface SpotListViewProps {
@@ -44,11 +44,8 @@ export default function SpotListView({ spots, userLat, userLng }: SpotListViewPr
         {sorted.map((spot) => {
           const dist = calcDistance(userLat, userLng, spot.latitude, spot.longitude);
           return (
-            <div key={spot.id} className="relative">
-              <SpotCard spot={spot} />
-              <span className="absolute top-3 right-3 rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700">
-                {formatDistance(dist)}
-              </span>
+            <div key={spot.id}>
+              <SpotCard spot={spot} distanceLabel={formatDistance(dist)} />
             </div>
           );
         })}
