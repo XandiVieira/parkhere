@@ -488,13 +488,15 @@ type TranslationKey = keyof typeof translations.pt;
 let currentLocale: Locale = "pt";
 
 if (typeof window !== "undefined") {
-  const stored = localStorage.getItem("parkhere-locale");
+  const stored = localStorage.getItem("parkhere-locale-v2");
   if (stored === "pt" || stored === "en") {
     currentLocale = stored;
   } else {
-    const lang = navigator.language?.toLowerCase() || "";
-    currentLocale = lang.startsWith("pt") ? "pt" : "en";
-    localStorage.setItem("parkhere-locale", currentLocale);
+    // Brazilian app: use Portuguese if pt is anywhere in the user's language list
+    const langs = navigator.languages || [navigator.language || ""];
+    const hasPt = langs.some(l => l.toLowerCase().startsWith("pt"));
+    currentLocale = hasPt ? "pt" : "en";
+    localStorage.setItem("parkhere-locale-v2", currentLocale);
   }
 }
 
