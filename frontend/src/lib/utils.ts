@@ -1,7 +1,27 @@
+import { t } from "@/lib/i18n";
 import type { SpotType, TrustLevel } from "@/types/api";
 
+const ADDRESS_NOISE = [
+  "região geográfica imediata",
+  "região geográfica intermediária",
+  "região metropolitana",
+  "região sul",
+  "região norte",
+  "região sudeste",
+  "região nordeste",
+  "região centro-oeste",
+];
+
+export function cleanAddress(address: string): string {
+  return address
+    .split(",")
+    .map(p => p.trim())
+    .filter(p => !ADDRESS_NOISE.some(noise => p.toLowerCase().includes(noise)))
+    .join(", ");
+}
+
 export function formatPrice(min: number, max: number): string {
-  if (min === 0 && max === 0) return "Free";
+  if (min === 0 && max === 0) return t("spot.free");
   if (min === max) return `R$${min.toFixed(0)}`;
   return `R$${min.toFixed(0)} - R$${max.toFixed(0)}`;
 }
@@ -24,14 +44,7 @@ export function formatDate(isoString: string): string {
 }
 
 export function spotTypeLabel(type: SpotType): string {
-  const labels: Record<SpotType, string> = {
-    STREET: "Street",
-    PARKING_LOT: "Parking Lot",
-    MALL: "Mall",
-    TERRAIN: "Terrain",
-    ZONA_AZUL: "Zona Azul",
-  };
-  return labels[type] ?? type;
+  return t(`type.${type}` as any);
 }
 
 export function spotTypeIcon(type: SpotType): string {

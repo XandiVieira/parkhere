@@ -14,7 +14,7 @@ import type {
 } from "@/types/api";
 import TrustBadge from "@/components/spots/TrustBadge";
 import ReportForm from "@/components/reports/ReportForm";
-import { formatPrice, formatDate, spotTypeLabel } from "@/lib/utils";
+import { formatPrice, formatDate, spotTypeLabel, cleanAddress } from "@/lib/utils";
 
 type Tab = "summary" | "reports" | "analytics";
 
@@ -173,7 +173,7 @@ export default function SpotDetailPage({
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{spot.name}</h1>
             <p className="mt-1 text-sm text-gray-500">{spotTypeLabel(spot.type)}</p>
-            {spot.address && <p className="mt-1 text-sm text-gray-600">{spot.address}</p>}
+            {spot.address && <p className="mt-1 text-sm text-gray-600">{cleanAddress(spot.address)}</p>}
           </div>
           <TrustBadge level={spot.trustLevel} className="mt-1" />
         </div>

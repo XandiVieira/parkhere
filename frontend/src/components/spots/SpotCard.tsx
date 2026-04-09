@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { SpotResponse } from "@/types/api";
 import TrustBadge from "./TrustBadge";
-import { formatPrice, spotTypeIcon } from "@/lib/utils";
+import { formatPrice, spotTypeIcon, cleanAddress } from "@/lib/utils";
 import { t } from "@/lib/i18n";
 
 interface SpotCardProps {
@@ -39,7 +39,7 @@ export default function SpotCard({ spot, actions, distanceLabel }: SpotCardProps
       </div>
 
       {spot.address && (
-        <p className="mt-2 text-sm text-gray-600 line-clamp-1">{spot.address}</p>
+        <p className="mt-2 text-sm text-gray-600 line-clamp-1">{cleanAddress(spot.address)}</p>
       )}
 
       <div className="mt-3 flex items-center justify-between text-sm">
