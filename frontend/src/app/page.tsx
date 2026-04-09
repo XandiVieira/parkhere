@@ -3,7 +3,7 @@
 import { Suspense, useState, useRef, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
 import axios from "axios";
 import { t } from "@/lib/i18n";
@@ -55,6 +55,7 @@ export default function HomePage() {
 
 function HomePageInner() {
   const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState("");
   const [searching, setSearching] = useState(false);
@@ -258,34 +259,33 @@ function HomePageInner() {
         )}
       </div>
 
-      {/* Floating action buttons */}
-      {isAuthenticated && (
-        <div className="fixed right-6 bottom-6 z-[1000] flex flex-col gap-3">
-          <button
-            onClick={() => {
-              if (nearbySpots.length === 0) {
-                alert(t("map.noNearbySpots"));
-                return;
-              }
-              const sorted = [...nearbySpots].sort((a, b) => {
-                const distA = Math.hypot(a.latitude - (userPos?.lat || 0), a.longitude - (userPos?.lng || 0));
-                const distB = Math.hypot(b.latitude - (userPos?.lat || 0), b.longitude - (userPos?.lng || 0));
-                return distA - distB;
-              });
-              setQuickReportSpot(sorted[0]);
-            }}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg shadow-lg transition hover:bg-green-700"
-            title={t("map.reportNearby")}
-          >
-            📍
-          </button>
-          <Link href="/spots/new"
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-lg transition hover:bg-blue-700"
-            title={t("map.addSpot")}>
-            +
-          </Link>
-        </div>
-      )}
+      {/* Floating action buttons — always visible, redirect to register if not logged in */}
+      <div className="fixed right-6 bottom-6 z-[1000] flex flex-col gap-3">
+        <button
+          onClick={() => {
+            if (!isAuthenticated) { router.push("/register"); return; }
+            if (nearbySpots.length === 0) {
+              alert(t("map.noNearbySpots"));
+              return;
+            }
+            const sorted = [...nearbySpots].sort((a, b) => {
+              const distA = Math.hypot(a.latitude - (userPos?.lat || 0), a.longitude - (userPos?.lng || 0));
+              const distB = Math.hypot(b.latitude - (userPos?.lat || 0), b.longitude - (userPos?.lng || 0));
+              return distA - distB;
+            });
+            setQuickReportSpot(sorted[0]);
+          }}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-lg shadow-lg transition hover:bg-green-700"
+          title={t("map.reportNearby")}
+        >
+          📍
+        </button>
+        <Link href={isAuthenticated ? "/spots/new" : "/register"}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-lg transition hover:bg-blue-700"
+          title={t("map.addSpot")}>
+          +
+        </Link>
+      </div>
 
       {/* Quick Report Modal */}
       {quickReportSpot && userPos && (

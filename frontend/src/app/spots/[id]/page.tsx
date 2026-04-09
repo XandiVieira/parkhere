@@ -220,34 +220,32 @@ export default function SpotDetailPage({
           </div>
         )}
 
-        {/* Actions */}
-        {isAuthenticated && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              onClick={toggleFavorite}
-              className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                isFavorite
-                  ? "bg-red-50 text-red-600 hover:bg-red-100"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {isFavorite ? "❤️" : "🤍"} {isFavorite ? t("spot.favorited") : t("spot.favorite")}
-            </button>
-            <button
-              onClick={() => setShowReportForm(!showReportForm)}
-              className="rounded-md bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-200"
-            >
-              {showReportForm ? t("report.cancelReport") : t("report.submit")}
-            </button>
-            <button
-              onClick={requestRemoval}
-              disabled={removalLoading}
-              className="rounded-md bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-700 hover:bg-orange-200 disabled:opacity-50"
-            >
-              {t("spot.requestRemoval")}
-            </button>
-          </div>
-        )}
+        {/* Actions — always visible, redirect to register if not logged in */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => isAuthenticated ? toggleFavorite() : router.push("/register")}
+            className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ${
+              isFavorite
+                ? "bg-red-50 text-red-600 hover:bg-red-100"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {isFavorite ? "❤️" : "🤍"} {isFavorite ? t("spot.favorited") : t("spot.favorite")}
+          </button>
+          <button
+            onClick={() => isAuthenticated ? setShowReportForm(!showReportForm) : router.push("/register")}
+            className="rounded-md bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-200"
+          >
+            {showReportForm ? t("report.cancelReport") : t("report.submit")}
+          </button>
+          <button
+            onClick={() => isAuthenticated ? requestRemoval() : router.push("/register")}
+            disabled={removalLoading}
+            className="rounded-md bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+          >
+            {t("spot.requestRemoval")}
+          </button>
+        </div>
       </div>
 
       {/* Report Form */}
