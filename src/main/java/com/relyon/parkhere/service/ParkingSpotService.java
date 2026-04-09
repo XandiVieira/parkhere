@@ -56,6 +56,7 @@ public class ParkingSpotService {
                 .priceMax(request.priceMax())
                 .requiresBooking(request.requiresBooking())
                 .estimatedSpots(request.estimatedSpots())
+                .informalChargeFrequency(request.informalChargeFrequency() != null ? request.informalChargeFrequency() : "UNKNOWN")
                 .notes(request.notes())
                 .createdBy(user)
                 .build();
@@ -128,6 +129,7 @@ public class ParkingSpotService {
         spot.setPriceMax(request.priceMax());
         spot.setRequiresBooking(request.requiresBooking());
         spot.setEstimatedSpots(request.estimatedSpots());
+        if (request.informalChargeFrequency() != null) spot.setInformalChargeFrequency(request.informalChargeFrequency());
         spot.setNotes(request.notes());
 
         spot.getSchedules().clear();

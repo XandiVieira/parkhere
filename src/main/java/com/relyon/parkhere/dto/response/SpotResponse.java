@@ -24,6 +24,7 @@ public record SpotResponse(
         int totalConfirmations,
         LocalDateTime lastConfirmedAt,
         String address,
+        String informalChargeFrequency,
         List<ScheduleResponse> schedules,
         UUID createdBy,
         LocalDateTime createdAt
@@ -49,6 +50,7 @@ public record SpotResponse(
                 spot.getTotalConfirmations(),
                 spot.getLastConfirmedAt(),
                 spot.getAddress(),
+                spot.getInformalChargeFrequency(),
                 schedules,
                 spot.getCreatedBy().getId(),
                 spot.getCreatedAt()

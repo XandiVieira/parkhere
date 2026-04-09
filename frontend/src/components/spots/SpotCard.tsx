@@ -42,6 +42,12 @@ export default function SpotCard({ spot, actions, distanceLabel }: SpotCardProps
         <p className="mt-2 text-sm text-gray-600 line-clamp-1">{cleanAddress(spot.address)}</p>
       )}
 
+      {(spot.informalChargeFrequency === "OFTEN" || spot.informalChargeFrequency === "ALWAYS") && (
+        <div className="mt-2 flex items-center gap-1 rounded bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+          🚨 {t("informal.warning")}
+        </div>
+      )}
+
       <div className="mt-3 flex items-center justify-between text-sm">
         <span className="font-medium text-gray-800">
           {formatPrice(spot.priceMin, spot.priceMax)}

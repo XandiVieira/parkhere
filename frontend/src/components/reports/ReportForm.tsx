@@ -16,6 +16,10 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
   const [estimatedPrice, setEstimatedPrice] = useState("");
   const [safetyRating, setSafetyRating] = useState(3);
   const [informalCharge, setInformalCharge] = useState(false);
+  const [informalType, setInformalType] = useState("FLANELINHA");
+  const [informalAmount, setInformalAmount] = useState("");
+  const [informalAggro, setInformalAggro] = useState(1);
+  const [informalNote, setInformalNote] = useState("");
   const [note, setNote] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,6 +61,10 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
         estimatedPrice: estimatedPrice ? parseFloat(estimatedPrice) : null,
         safetyRating,
         informalChargeReported: informalCharge,
+        informalChargeType: informalCharge ? informalType : null,
+        informalChargeAmount: informalCharge && informalAmount ? parseFloat(informalAmount) : null,
+        informalChargeAggressiveness: informalCharge ? informalAggro : null,
+        informalChargeNote: informalCharge && informalNote ? informalNote : null,
         note: note || null,
         userLatitude: latitude,
         userLongitude: longitude,
@@ -149,15 +157,54 @@ export default function ReportForm({ spotId, onSuccess, onCancel }: ReportFormPr
       </div>
 
       {/* Informal Charge */}
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={informalCharge}
-          onChange={(e) => setInformalCharge(e.target.checked)}
-          className="rounded text-blue-600"
-        />
-        <span className="text-sm text-gray-700">{t("report.informalCharge")}</span>
-      </label>
+      <div className="space-y-3">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={informalCharge}
+            onChange={(e) => setInformalCharge(e.target.checked)}
+            className="rounded text-blue-600"
+          />
+          <span className="text-sm font-medium text-gray-700">{t("report.informalCharge")}</span>
+        </label>
+
+        {informalCharge && (
+          <div className="ml-6 space-y-3 rounded-md border border-orange-200 bg-orange-50 p-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{t("report.informalType")}</label>
+              <select value={informalType} onChange={(e) => setInformalType(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                <option value="FLANELINHA">{t("report.informalTypeFlanelinha")}</option>
+                <option value="IRREGULAR">{t("report.informalTypeIrregular")}</option>
+                <option value="ABUSIVE">{t("report.informalTypeAbusive")}</option>
+                <option value="OTHER">{t("report.informalTypeOther")}</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{t("report.informalAmount")}</label>
+              <input type="number" min="0" step="1" value={informalAmount} onChange={(e) => setInformalAmount(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{t("report.informalAggressiveness")}</label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} type="button" onClick={() => setInformalAggro(n)}
+                    className={`rounded px-3 py-1 text-sm font-medium transition ${n <= informalAggro ? "bg-red-500 text-white" : "bg-gray-200 text-gray-600"}`}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700">{t("report.informalNote")}</label>
+              <textarea value={informalNote} onChange={(e) => setInformalNote(e.target.value)} rows={2}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                placeholder={t("report.informalNotePlaceholder")} />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Note */}
       <div>

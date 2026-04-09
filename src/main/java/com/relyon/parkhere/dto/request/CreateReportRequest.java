@@ -8,6 +8,10 @@ public record CreateReportRequest(
         @PositiveOrZero Double estimatedPrice,
         @Min(1) @Max(5) Integer safetyRating,
         boolean informalChargeReported,
+        String informalChargeType,
+        @PositiveOrZero Double informalChargeAmount,
+        @Min(1) @Max(5) Integer informalChargeAggressiveness,
+        @Size(max = 500) String informalChargeNote,
         @Size(max = 500) String note,
         @NotNull @DecimalMin("-90.0") @DecimalMax("90.0") Double userLatitude,
         @NotNull @DecimalMin("-180.0") @DecimalMax("180.0") Double userLongitude

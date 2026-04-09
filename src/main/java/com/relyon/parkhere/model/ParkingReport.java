@@ -37,6 +37,16 @@ public class ParkingReport extends BaseEntity {
     @Builder.Default
     private boolean informalChargeReported = false;
 
+    @Column(length = 30)
+    private String informalChargeType;
+
+    private Double informalChargeAmount;
+
+    private Integer informalChargeAggressiveness;
+
+    @Column(length = 500)
+    private String informalChargeNote;
+
     private String note;
 
     @Column(nullable = false)

@@ -205,6 +205,17 @@ export default function SpotDetailPage({
           )}
         </div>
 
+        {/* Informal charge warning */}
+        {spot.informalChargeFrequency && spot.informalChargeFrequency !== "UNKNOWN" && spot.informalChargeFrequency !== "NEVER" && (
+          <div className={`mt-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+            spot.informalChargeFrequency === "ALWAYS" ? "bg-red-100 text-red-800" :
+            spot.informalChargeFrequency === "OFTEN" ? "bg-red-50 text-red-700" :
+            "bg-orange-50 text-orange-700"
+          }`}>
+            🚨 {t("informal.label")}: {t(`informal.${spot.informalChargeFrequency}` as any)}
+          </div>
+        )}
+
         {/* Schedules */}
         {spot.schedules.length > 0 && (
           <div className="mt-4">
@@ -353,18 +364,27 @@ export default function SpotDetailPage({
                           <span>{t("report.safety")}: {"★".repeat(report.safetyRating)}{"☆".repeat(5 - report.safetyRating)}</span>
                         )}
                         {report.informalChargeReported && (
-                          <span className="text-red-600">{t("spot.informalCharge")}</span>
+                          <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                            🚨 {report.informalChargeType || t("spot.informalCharge")}
+                            {report.informalChargeAmount ? ` R$${report.informalChargeAmount}` : ""}
+                          </span>
                         )}
                       </div>
                       {report.note && (
                         <p className="mt-2 text-sm text-gray-700">{report.note}</p>
                       )}
                       {report.images.length > 0 && (
-                        <div className="mt-2 flex gap-2">
+                        <div className="mt-2 flex gap-2 overflow-x-auto">
                           {report.images.map((img) => (
-                            <span key={img.filename} className="text-xs text-blue-600">
-                              {img.originalFilename}
-                            </span>
+                            <a key={img.filename}
+                              href={`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/v1/images/${img.filename}`}
+                              target="_blank" rel="noopener noreferrer">
+                              <img
+                                src={`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/v1/images/${img.filename}`}
+                                alt={img.originalFilename}
+                                className="h-20 w-20 rounded-md object-cover"
+                              />
+                            </a>
                           ))}
                         </div>
                       )}

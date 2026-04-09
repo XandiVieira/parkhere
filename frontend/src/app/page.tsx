@@ -25,6 +25,7 @@ export interface MapFilters {
   trustLevels: Set<TrustLevel>;
   spotTypes: Set<SpotType>;
   freeOnly: boolean;
+  noInformalCharge: boolean;
 }
 
 const ALL_TRUST: TrustLevel[] = ["HIGH", "MEDIUM", "LOW", "NO_DATA"];
@@ -65,6 +66,7 @@ function HomePageInner() {
     trustLevels: new Set(ALL_TRUST),
     spotTypes: new Set(ALL_TYPES),
     freeOnly: false,
+    noInformalCharge: false,
   });
   const flyToRef = useRef<((lat: number, lng: number) => void) | null>(null);
   const [nearbySpots, setNearbySpots] = useState<SpotResponse[]>([]);
@@ -78,7 +80,7 @@ function HomePageInner() {
       const d = res.data;
       const types = d.defaultSpotTypes?.length ? new Set(d.defaultSpotTypes as SpotType[]) : new Set(ALL_TYPES);
       const trust = d.defaultTrustLevels?.length ? new Set(d.defaultTrustLevels as TrustLevel[]) : new Set(ALL_TRUST);
-      setFilters({ trustLevels: trust, spotTypes: types, freeOnly: d.freeOnly || false });
+      setFilters(prev => ({ ...prev, trustLevels: trust, spotTypes: types, freeOnly: d.freeOnly || false }));
     }).catch(() => {});
   }, [isAuthenticated]);
 
@@ -134,7 +136,8 @@ function HomePageInner() {
   const activeFilterCount =
     (ALL_TRUST.length - filters.trustLevels.size) +
     (ALL_TYPES.length - filters.spotTypes.size) +
-    (filters.freeOnly ? 1 : 0);
+    (filters.freeOnly ? 1 : 0) +
+    (filters.noInformalCharge ? 1 : 0);
 
   return (
     <div className="relative flex flex-1 flex-col">
@@ -213,6 +216,12 @@ function HomePageInner() {
             <span>{t("map.freeOnly")}</span>
           </label>
 
+          <label className="flex cursor-pointer items-center gap-2 border-t border-gray-100 pt-3 text-sm">
+            <input type="checkbox" checked={filters.noInformalCharge}
+              onChange={() => setFilters(prev => ({ ...prev, noInformalCharge: !prev.noInformalCharge }))} className="rounded" />
+            <span>{t("informal.filter")}</span>
+          </label>
+
           <button onClick={() => setFiltersOpen(false)}
             className="mt-3 w-full rounded-md bg-blue-600 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             {t("common.apply")}
@@ -251,6 +260,7 @@ function HomePageInner() {
               if (!filters.trustLevels.has(spot.trustLevel)) return false;
               if (!filters.spotTypes.has(spot.type)) return false;
               if (filters.freeOnly && spot.priceMax > 0) return false;
+              if (filters.noInformalCharge && (spot.informalChargeFrequency === "OFTEN" || spot.informalChargeFrequency === "ALWAYS")) return false;
               return true;
             })}
             userLat={userPos?.lat || -30.03}

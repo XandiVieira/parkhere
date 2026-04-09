@@ -69,6 +69,10 @@ public class ParkingReportService {
                 .estimatedPrice(request.estimatedPrice())
                 .safetyRating(request.safetyRating())
                 .informalChargeReported(request.informalChargeReported())
+                .informalChargeType(request.informalChargeType())
+                .informalChargeAmount(request.informalChargeAmount())
+                .informalChargeAggressiveness(request.informalChargeAggressiveness())
+                .informalChargeNote(request.informalChargeNote())
                 .note(request.note())
                 .gpsDistanceMeters(distance)
                 .build();

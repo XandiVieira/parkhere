@@ -14,6 +14,7 @@ public record UpdateSpotRequest(
         @PositiveOrZero double priceMax,
         boolean requiresBooking,
         @Positive Integer estimatedSpots,
+        String informalChargeFrequency,
         @Size(max = 1000) String notes,
         List<@Valid ScheduleRequest> schedules
 ) {}

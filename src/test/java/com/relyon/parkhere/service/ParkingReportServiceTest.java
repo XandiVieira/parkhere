@@ -94,7 +94,7 @@ class ParkingReportServiceTest {
         var user = buildUser();
         var spot = buildSpot(user);
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Plenty of space",
+                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null, null, null, null, "Plenty of space",
                 -22.9070, -43.1730
         );
         when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
@@ -121,7 +121,7 @@ class ParkingReportServiceTest {
         var user = buildUser();
         var spotId = UUID.randomUUID();
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                AvailabilityStatus.AVAILABLE, null, null, false, null, null, null, null, null,
                 -22.9070, -43.1730
         );
         when(spotRepository.findByIdAndActiveTrue(spotId)).thenReturn(Optional.empty());
@@ -134,7 +134,7 @@ class ParkingReportServiceTest {
         var user = buildUser();
         var spot = buildSpot(user);
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                AvailabilityStatus.AVAILABLE, null, null, false, null, null, null, null, null,
                 -22.9068, -43.1729
         );
         when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
@@ -228,7 +228,7 @@ class ParkingReportServiceTest {
         var user = buildUser();
         var spot = buildSpot(user);
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                AvailabilityStatus.AVAILABLE, null, null, false, null, null, null, null, null,
                 -22.9070, -43.1730
         );
         when(spotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));

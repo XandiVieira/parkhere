@@ -82,7 +82,7 @@ class ParkingSpotServiceTest {
     @Test
     void create_shouldSaveAndReturnSpotResponse() {
         var user = buildUser();
-        var request = new CreateSpotRequest("Street Parking", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
+        var request = new CreateSpotRequest("Street Parking", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null, null);
         when(parkingSpotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> {
             var spot = inv.<ParkingSpot>getArgument(0);
             spot.setId(UUID.randomUUID());
@@ -107,7 +107,7 @@ class ParkingSpotServiceTest {
     void create_shouldThrowWhenNearbySpotExistsAndNotForced() {
         var user = buildUser();
         var existingSpot = buildSpot(user);
-        var request = new CreateSpotRequest("Duplicate Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
+        var request = new CreateSpotRequest("Duplicate Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null, null);
         when(parkingSpotRepository.findWithinRadius(-22.9068, -43.1729, 50.0))
                 .thenReturn(List.of(existingSpot));
 
@@ -121,7 +121,7 @@ class ParkingSpotServiceTest {
     @Test
     void create_shouldAllowWhenNearbySpotExistsAndForced() {
         var user = buildUser();
-        var request = new CreateSpotRequest("Forced Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null);
+        var request = new CreateSpotRequest("Forced Spot", SpotType.STREET, -22.9068, -43.1729, 5.0, 15.0, false, null, null, null, null);
         when(parkingSpotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> {
             var spot = inv.<ParkingSpot>getArgument(0);
             spot.setId(UUID.randomUUID());
@@ -198,7 +198,7 @@ class ParkingSpotServiceTest {
     void update_shouldUpdateAllFields() {
         var user = buildUser();
         var spot = buildSpot(user);
-        var request = new UpdateSpotRequest("Updated Spot", 10.0, 25.0, true, 50, "Updated notes", null);
+        var request = new UpdateSpotRequest("Updated Spot", 10.0, 25.0, true, 50, null, "Updated notes", null);
         when(parkingSpotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
         when(parkingSpotRepository.save(any(ParkingSpot.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -221,7 +221,7 @@ class ParkingSpotServiceTest {
         otherUser.setCreatedAt(LocalDateTime.now());
         otherUser.setUpdatedAt(LocalDateTime.now());
         var spot = buildSpot(creator);
-        var request = new UpdateSpotRequest("Hacked", 0.0, 0.0, false, null, null, null);
+        var request = new UpdateSpotRequest("Hacked", 0.0, 0.0, false, null, null, null, null);
         when(parkingSpotRepository.findByIdAndActiveTrue(spot.getId())).thenReturn(Optional.of(spot));
 
         assertThrows(UnauthorizedSpotModificationException.class,
@@ -232,7 +232,7 @@ class ParkingSpotServiceTest {
     void update_shouldThrowWhenSpotNotFound() {
         var user = buildUser();
         var id = UUID.randomUUID();
-        var request = new UpdateSpotRequest("Name", 0.0, 0.0, false, null, null, null);
+        var request = new UpdateSpotRequest("Name", 0.0, 0.0, false, null, null, null, null);
         when(parkingSpotRepository.findByIdAndActiveTrue(id)).thenReturn(Optional.empty());
 
         assertThrows(SpotNotFoundException.class, () -> parkingSpotService.update(id, request, user));

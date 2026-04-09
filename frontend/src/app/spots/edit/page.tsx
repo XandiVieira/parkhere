@@ -20,6 +20,7 @@ function EditSpotForm() {
   const [notes, setNotes] = useState("");
   const [requiresBooking, setRequiresBooking] = useState(false);
   const [estimatedSpots, setEstimatedSpots] = useState("");
+  const [informalFrequency, setInformalFrequency] = useState("UNKNOWN");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -38,6 +39,7 @@ function EditSpotForm() {
       setNotes(s.notes || "");
       setRequiresBooking(s.requiresBooking);
       setEstimatedSpots(s.estimatedSpots !== null ? String(s.estimatedSpots) : "");
+      setInformalFrequency(s.informalChargeFrequency || "UNKNOWN");
     }).catch(() => {
       router.push("/");
     }).finally(() => setPageLoading(false));
@@ -55,6 +57,7 @@ function EditSpotForm() {
         notes: notes || null,
         requiresBooking,
         estimatedSpots: estimatedSpots ? parseInt(estimatedSpots) : null,
+        informalChargeFrequency: informalFrequency,
       });
       setSuccess(true);
       setTimeout(() => router.push(`/spots/${spotId}`), 1500);
@@ -123,6 +126,22 @@ function EditSpotForm() {
           <input type="checkbox" checked={requiresBooking} onChange={(e) => setRequiresBooking(e.target.checked)} className="rounded text-blue-600" />
           <span className="text-sm text-gray-700">{t("newSpot.booking")}</span>
         </label>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">{t("informal.frequency")}</label>
+          <div className="flex flex-wrap gap-2">
+            {["UNKNOWN", "NEVER", "SOMETIMES", "OFTEN", "ALWAYS"].map(freq => (
+              <button key={freq} type="button" onClick={() => setInformalFrequency(freq)}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                  informalFrequency === freq
+                    ? freq === "OFTEN" || freq === "ALWAYS" ? "bg-red-600 text-white" : freq === "SOMETIMES" ? "bg-orange-500 text-white" : "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}>
+                {t(`informal.${freq}` as any)}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div>
           <label htmlFor="notes" className="mb-1 block text-sm font-medium text-gray-700">{t("newSpot.notes")}</label>

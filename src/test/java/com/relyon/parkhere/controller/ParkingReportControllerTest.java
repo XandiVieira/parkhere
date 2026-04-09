@@ -77,12 +77,12 @@ class ParkingReportControllerTest {
         var user = buildUser();
         var spotId = UUID.randomUUID();
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Good spot",
+                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null, null, null, null, "Good spot",
                 -22.9070, -43.1730
         );
         var response = new ReportResponse(
                 UUID.randomUUID(), spotId, user.getId(),
-                AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Good spot",
+                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null, null, null, null, "Good spot",
                 50.0, List.of(), LocalDateTime.now()
         );
         when(reportService.submitReport(eq(spotId), any(CreateReportRequest.class), any(User.class), any()))
@@ -101,7 +101,7 @@ class ParkingReportControllerTest {
     void submitReport_shouldReturn401WhenUnauthenticated() throws Exception {
         var spotId = UUID.randomUUID();
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                AvailabilityStatus.AVAILABLE, null, null, false, null, null, null, null, null,
                 -22.9070, -43.1730
         );
 
@@ -116,7 +116,7 @@ class ParkingReportControllerTest {
         var user = buildUser();
         var spotId = UUID.randomUUID();
         var request = new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                AvailabilityStatus.AVAILABLE, null, null, false, null, null, null, null, null,
                 -22.9070, -43.1730
         );
         when(reportService.submitReport(eq(spotId), any(CreateReportRequest.class), any(User.class), any()))
@@ -137,7 +137,7 @@ class ParkingReportControllerTest {
         var spotId = UUID.randomUUID();
         var response = new ReportResponse(
                 UUID.randomUUID(), spotId, user.getId(),
-                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null,
+                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null, null, null, null, null,
                 50.0, List.of(), LocalDateTime.now()
         );
         var pageResult = new PageImpl<>(List.of(response), PageRequest.of(0, 20), 1);
@@ -175,12 +175,12 @@ class ParkingReportControllerTest {
         var spotId = UUID.randomUUID();
         var response = new ReportResponse(
                 UUID.randomUUID(), spotId, user.getId(),
-                AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Good spot",
+                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null, null, null, null, "Good spot",
                 50.0, List.of(new ReportImageResponse("image1.jpg", "photo.jpg", "image/jpeg")), LocalDateTime.now()
         );
 
         var reportJson = objectMapper.writeValueAsString(new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, 10.0, 4, false, "Good spot",
+                AvailabilityStatus.AVAILABLE, 10.0, 4, false, null, null, null, null, "Good spot",
                 -22.9070, -43.1730
         ));
 
@@ -207,7 +207,7 @@ class ParkingReportControllerTest {
     void submitReport_multipart_shouldReturn401WhenUnauthenticated() throws Exception {
         var spotId = UUID.randomUUID();
         var reportJson = objectMapper.writeValueAsString(new CreateReportRequest(
-                AvailabilityStatus.AVAILABLE, null, null, false, null,
+                AvailabilityStatus.AVAILABLE, null, null, false, null, null, null, null, null,
                 -22.9070, -43.1730
         ));
         var reportPart = new MockMultipartFile(

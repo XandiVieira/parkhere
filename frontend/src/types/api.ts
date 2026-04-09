@@ -53,6 +53,7 @@ export interface SpotResponse {
   totalConfirmations: number;
   lastConfirmedAt: string | null;
   address: string | null;
+  informalChargeFrequency: string;
   schedules: ScheduleResponse[];
   createdBy: string;
   createdAt: string;
@@ -95,6 +96,10 @@ export interface ReportResponse {
   estimatedPrice: number | null;
   safetyRating: number | null;
   informalChargeReported: boolean;
+  informalChargeType: string | null;
+  informalChargeAmount: number | null;
+  informalChargeAggressiveness: number | null;
+  informalChargeNote: string | null;
   note: string | null;
   gpsDistanceMeters: number;
   images: ReportImageResponse[];
