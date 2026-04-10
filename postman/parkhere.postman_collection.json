@@ -40,6 +40,16 @@
 			"key": "imageFilename",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "verificationToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"auth": {
@@ -253,6 +263,93 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/verify-email?token={{verificationToken}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-email"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{verificationToken}}"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Verify email returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Resend Verification",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"john@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/resend-verification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-verification"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Resend verification returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
 				}
 			]
 		},
@@ -750,7 +847,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": false,\n\t\"note\": \"Plenty of space\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
+							"raw": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": true,\n\t\"informalChargeType\": \"FLANELINHA\",\n\t\"informalChargeAmount\": 20.0,\n\t\"informalChargeAggressiveness\": 3,\n\t\"informalChargeNote\": \"Flanelinha near the corner\",\n\t\"note\": \"Plenty of space\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
@@ -779,7 +876,7 @@
 							"formdata": [
 								{
 									"key": "report",
-									"value": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": false,\n\t\"note\": \"Plenty of space\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}",
+									"value": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": true,\n\t\"informalChargeType\": \"FLANELINHA\",\n\t\"informalChargeAmount\": 20.0,\n\t\"informalChargeAggressiveness\": 3,\n\t\"informalChargeNote\": \"Flanelinha near the corner\",\n\t\"note\": \"Plenty of space\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}",
 									"type": "text",
 									"contentType": "application/json"
 								},
@@ -1083,6 +1180,116 @@
 								"users",
 								"{{userId}}",
 								"unban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Spots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/spots?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"spots"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Reports",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/reports?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"stats"
 							]
 						}
 					},
@@ -1698,7 +1905,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": false,\n\t\"note\": \"E2E test report\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
+							"raw": "{\n\t\"availabilityStatus\": \"AVAILABLE\",\n\t\"estimatedPrice\": 10.0,\n\t\"safetyRating\": 4,\n\t\"informalChargeReported\": true,\n\t\"informalChargeType\": \"FLANELINHA\",\n\t\"informalChargeAmount\": 20.0,\n\t\"informalChargeAggressiveness\": 3,\n\t\"informalChargeNote\": \"Flanelinha near the corner\",\n\t\"note\": \"E2E test report\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
@@ -1728,6 +1935,10 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.availabilityStatus).to.eql('AVAILABLE');",
 									"    pm.expect(jsonData.estimatedPrice).to.eql(10.0);",
+									"    pm.expect(jsonData.informalChargeReported).to.eql(true);",
+									"    pm.expect(jsonData.informalChargeType).to.eql('FLANELINHA');",
+									"    pm.expect(jsonData.informalChargeAmount).to.eql(20.0);",
+									"    pm.expect(jsonData.informalChargeAggressiveness).to.eql(3);",
 									"    pm.collectionVariables.set('reportId', jsonData.id);",
 									"});"
 								]
@@ -2148,7 +2359,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"availabilityStatus\": \"UNAVAILABLE\",\n\t\"estimatedPrice\": 12.0,\n\t\"safetyRating\": 3,\n\t\"informalChargeReported\": false,\n\t\"note\": \"Second user report\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
+							"raw": "{\n\t\"availabilityStatus\": \"UNAVAILABLE\",\n\t\"estimatedPrice\": 12.0,\n\t\"safetyRating\": 3,\n\t\"informalChargeReported\": false,\n\t\"informalChargeType\": null,\n\t\"informalChargeAmount\": null,\n\t\"informalChargeAggressiveness\": null,\n\t\"informalChargeNote\": null,\n\t\"note\": \"Second user report\",\n\t\"userLatitude\": -22.9070,\n\t\"userLongitude\": -43.1730\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/spots/{{spotId}}/reports",
@@ -2897,6 +3108,355 @@
 								"exec": [
 									"pm.test('Get leaderboard returns 200', function () {",
 									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "34. Resend verification email",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"e2e-nonexistent@test.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/resend-verification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"resend-verification"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Resend verification returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response has message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.exist;",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "35. Register admin user",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"E2E Admin User\",\n\t\"email\": \"e2e-admin-{{$timestamp}}@test.com\",\n\t\"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register admin user returns 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"// NOTE: In E2E, this user must be manually promoted to ADMIN in DB",
+									"// UPDATE users SET role = 'ADMIN' WHERE email LIKE 'e2e-admin-%';",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('adminToken', jsonData.token);"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "36. Admin get stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"stats"
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Admin get stats returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Stats has expected fields', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.totalUsers).to.be.a('number');",
+									"    pm.expect(jsonData.totalSpots).to.be.a('number');",
+									"    pm.expect(jsonData.totalReports).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "37. Admin list users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Admin list users returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is paginated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "38. Admin list spots",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/spots?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"spots"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Admin list spots returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is paginated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "39. Admin list reports",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/reports?page=0&size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"reports"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Admin list reports returns 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test('Response is paginated', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
 									"});"
 								]
 							}

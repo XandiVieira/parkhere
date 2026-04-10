@@ -20,8 +20,12 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -91,6 +95,55 @@ class AdminServiceTest {
         report.setCreatedAt(LocalDateTime.now());
         report.setUpdatedAt(LocalDateTime.now());
         return report;
+    }
+
+    @Test
+    void listUsers_shouldReturnPagedUsers() {
+        var user = buildUser();
+        var page = new PageImpl<>(List.of(user));
+        when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        var result = adminService.listUsers(PageRequest.of(0, 20));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("John", result.getContent().getFirst().name());
+    }
+
+    @Test
+    void listSpots_shouldReturnPagedSpots() {
+        var spot = buildSpot();
+        var page = new PageImpl<>(List.of(spot));
+        when(parkingSpotRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        var result = adminService.listSpots(PageRequest.of(0, 20));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Test Spot", result.getContent().getFirst().name());
+    }
+
+    @Test
+    void listReports_shouldReturnPagedReports() {
+        var report = buildReport();
+        var page = new PageImpl<>(List.of(report));
+        when(parkingReportRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        var result = adminService.listReports(PageRequest.of(0, 20));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(AvailabilityStatus.AVAILABLE, result.getContent().getFirst().availabilityStatus());
+    }
+
+    @Test
+    void getStats_shouldReturnCounts() {
+        when(userRepository.count()).thenReturn(10L);
+        when(parkingSpotRepository.count()).thenReturn(25L);
+        when(parkingReportRepository.count()).thenReturn(50L);
+
+        var stats = adminService.getStats();
+
+        assertEquals(10L, stats.get("totalUsers"));
+        assertEquals(25L, stats.get("totalSpots"));
+        assertEquals(50L, stats.get("totalReports"));
     }
 
     @Test

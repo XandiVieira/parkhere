@@ -22,11 +22,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.relyon.parkhere.model.User;
+import com.relyon.parkhere.service.EmailVerificationService;
+
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,7 +65,7 @@ class AuthControllerTest {
     private LocalizedMessageService localizedMessageService;
 
     @MockitoBean
-    private com.relyon.parkhere.service.EmailVerificationService emailVerificationService;
+    private EmailVerificationService emailVerificationService;
 
     private UserResponse sampleUserResponse() {
         return new UserResponse(UUID.randomUUID(), "John", null, "john@test.com", Role.USER, 0.0, null, false, LocalDateTime.now());
@@ -152,5 +158,59 @@ class AuthControllerTest {
                         .content("{\"token\": \"" + UUID.randomUUID() + "\", \"newPassword\": \"newPassword123\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void verifyEmail_shouldReturn200WhenTokenValid() throws Exception {
+        when(emailVerificationService.verify("valid-token")).thenReturn(true);
+
+        mockMvc.perform(get("/api/v1/auth/verify-email")
+                        .param("token", "valid-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Email verified successfully"));
+    }
+
+    @Test
+    void verifyEmail_shouldReturn400WhenTokenInvalid() throws Exception {
+        when(emailVerificationService.verify("bad-token")).thenReturn(false);
+
+        mockMvc.perform(get("/api/v1/auth/verify-email")
+                        .param("token", "bad-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid or expired verification link"));
+    }
+
+    @Test
+    void resendVerification_shouldReturn200Always() throws Exception {
+        var user = User.builder()
+                .id(UUID.randomUUID())
+                .name("John")
+                .email("john@test.com")
+                .password("encoded")
+                .build();
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+        when(userService.findByEmail("john@test.com")).thenReturn(Optional.of(user));
+
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"john@test.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").exists());
+
+        verify(emailVerificationService).sendVerificationEmail(user);
+    }
+
+    @Test
+    void resendVerification_shouldReturn200EvenWhenEmailNotFound() throws Exception {
+        when(userService.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/v1/auth/resend-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"unknown@test.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").exists());
+
+        verify(emailVerificationService, never()).sendVerificationEmail(any());
     }
 }
