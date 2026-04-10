@@ -20,6 +20,7 @@ export interface UserResponse {
   role: Role;
   reputationScore: number;
   profilePicUrl: string | null;
+  emailVerified: boolean;
   createdAt: string;
 }
 
@@ -54,6 +55,7 @@ export interface SpotResponse {
   lastConfirmedAt: string | null;
   address: string | null;
   informalChargeFrequency: string;
+  coverImageUrl: string | null;
   schedules: ScheduleResponse[];
   createdBy: string;
   createdAt: string;
@@ -78,6 +80,7 @@ export interface SpotSummaryResponse {
   avgSafetyRating: number | null;
   informalChargePercentage: number;
   informalChargeReportedRecently: boolean;
+  availabilityRate: number;
   lastReportAt: string | null;
 }
 

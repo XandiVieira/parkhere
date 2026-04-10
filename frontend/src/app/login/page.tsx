@@ -8,6 +8,7 @@ const GoogleLoginButton = dynamic(() => import("@/components/auth/GoogleLoginBut
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { t } from "@/lib/i18n";
+import { extractApiError } from "@/lib/utils";
 import axios from "axios";
 
 export default function LoginPage() {
@@ -30,10 +31,7 @@ export default function LoginPage() {
       login(res.data.token, res.data.user);
       router.push("/");
     } catch (err: unknown) {
-      const msg = err && typeof err === "object" && "response" in err
-        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      setError(msg || t("auth.invalidCredentials"));
+      setError(extractApiError(err) || t("auth.invalidCredentials"));
     } finally {
       setLoading(false);
     }
@@ -60,7 +58,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">{t("auth.login")}</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">{t("auth.login")}</h1>
 
         {error && (
           <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
@@ -84,17 +82,25 @@ export default function LoginPage() {
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">{t("auth.email")}</label>
             <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              disabled={loading}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
               placeholder={t("auth.emailPlaceholder")} />
           </div>
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">{t("auth.password")}</label>
             <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              disabled={loading}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
               placeholder="********" />
           </div>
           <button type="submit" disabled={loading}
-            className="w-full rounded-md bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            {loading && (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            )}
             {loading ? t("auth.logging") : t("auth.login")}
           </button>
         </form>

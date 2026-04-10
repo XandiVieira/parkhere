@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+const GoogleLoginButton = dynamic(() => import("@/components/auth/GoogleLoginButton"), { ssr: false });
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { t } from "@/lib/i18n";
+import { extractApiError } from "@/lib/utils";
+import axios from "axios";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,6 +20,24 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
+    if (!credentialResponse.credential) return;
+    setError("");
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"}/auth/google`,
+        { credential: credentialResponse.credential }
+      );
+      login(res.data.token, res.data.user);
+      router.push("/");
+    } catch {
+      setError(t("auth.googleError"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +58,7 @@ export default function RegisterPage() {
       login(res.data.token, res.data.user);
       router.push("/");
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
-      setError(msg || t("auth.registerFailed"));
+      setError(extractApiError(err) || t("auth.registerFailed"));
     } finally {
       setLoading(false);
     }
@@ -54,6 +72,20 @@ export default function RegisterPage() {
         {error && (
           <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
         )}
+
+        {/* Google Sign-In */}
+        <div className="mb-4 flex justify-center">
+          <GoogleLoginButton
+            onSuccess={(credential) => handleGoogleSuccess({ credential })}
+            onError={() => setError(t("auth.googleError"))}
+          />
+        </div>
+
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400">{t("common.or")}</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

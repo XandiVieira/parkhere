@@ -71,6 +71,12 @@ export const authApi = {
 
   resetPassword: (token: string, newPassword: string) =>
     api.post("/auth/reset-password", { token, newPassword }),
+
+  verifyEmail: (token: string) =>
+    api.get<{ message: string }>("/auth/verify-email", { params: { token } }),
+
+  resendVerification: (email: string) =>
+    api.post<{ message: string }>("/auth/resend-verification", { email }),
 };
 
 // === Spots ===
@@ -95,6 +101,14 @@ export const spotsApi = {
 
   getAnalytics: (spotId: string) =>
     api.get<SpotAnalyticsResponse>(`/spots/${spotId}/analytics`),
+
+  updateCoverImage: (spotId: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.put<SpotResponse>(`/spots/${spotId}/cover-image`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 
   addFavorite: (spotId: string) =>
     api.post(`/spots/${spotId}/favorite`),
