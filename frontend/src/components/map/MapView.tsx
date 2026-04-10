@@ -163,6 +163,7 @@ export default function MapView({ filters, onFlyToReady, onSpotsLoaded }: MapVie
           if (!filters.trustLevels.has(spot.trustLevel)) return false;
           if (!filters.spotTypes.has(spot.type)) return false;
           if (filters.freeOnly && spot.priceMax > 0) return false;
+          if (filters.noInformalCharge && (spot.informalChargeFrequency === "OFTEN" || spot.informalChargeFrequency === "ALWAYS")) return false;
           return true;
         }).map((spot) => (
           <Marker
