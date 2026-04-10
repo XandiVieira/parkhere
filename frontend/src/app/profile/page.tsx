@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usersApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { t } from "@/lib/i18n";
+import { apiBaseUrl } from "@/lib/utils";
 import type { GamificationResponse, BadgeType, SpotType, TrustLevel } from "@/types/api";
 
 const SPOT_TYPES: SpotType[] = ["STREET", "PARKING_LOT", "MALL", "TERRAIN", "ZONA_AZUL"];
@@ -111,7 +112,7 @@ export default function ProfilePage() {
 
   if (!isAuthenticated || !user) return null;
 
-  const picUrl = user.profilePicUrl ? `${(process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080")}${user.profilePicUrl}` : null;
+  const picUrl = user.profilePicUrl ? `${apiBaseUrl()}${user.profilePicUrl}` : null;
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">

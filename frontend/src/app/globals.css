@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f9fafb;
   --foreground: #111827;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
 }
 
 body {
@@ -11,7 +18,56 @@ body {
   min-height: 100vh;
 }
 
+/* Dark mode form inputs */
+.dark input, .dark textarea, .dark select {
+  background-color: var(--color-gray-800, #1f2937);
+  border-color: var(--color-gray-600, #4b5563);
+  color: var(--color-gray-100, #f3f4f6);
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: var(--color-gray-400, #9ca3af);
+}
+
+/* Dark mode cards and panels */
+.dark .bg-white {
+  background-color: var(--color-gray-800, #1f2937);
+}
+
+.dark .text-gray-900 {
+  color: var(--color-gray-100, #f3f4f6);
+}
+
+.dark .text-gray-700 {
+  color: var(--color-gray-300, #d1d5db);
+}
+
+.dark .text-gray-600 {
+  color: var(--color-gray-400, #9ca3af);
+}
+
+.dark .text-gray-500 {
+  color: var(--color-gray-400, #9ca3af);
+}
+
+.dark .border-gray-200 {
+  border-color: var(--color-gray-700, #374151);
+}
+
+.dark .border-gray-100 {
+  border-color: var(--color-gray-700, #374151);
+}
+
 .leaflet-container {
   height: 100%;
   width: 100%;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }
