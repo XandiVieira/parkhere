@@ -14,9 +14,12 @@ import { t } from "@/lib/i18n";
 const DEFAULT_CENTER: [number, number] = [-30.0346, -51.2177]; // Porto Alegre
 const DEFAULT_ZOOM = 13;
 
-function createPinIcon(color: string, priceLabel?: string): L.DivIcon {
+function createPinIcon(color: string, priceLabel?: string, hasInformalCharge?: boolean): L.DivIcon {
   const label = priceLabel
     ? `<div style="position:absolute;top:42px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:600;color:#333;background:#fff;padding:1px 4px;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.3)">${priceLabel}</div>`
+    : "";
+  const warning = hasInformalCharge
+    ? `<div style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#dc2626;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1">⚠</div>`
     : "";
   return L.divIcon({
     className: "",
@@ -26,7 +29,7 @@ function createPinIcon(color: string, priceLabel?: string): L.DivIcon {
     html: `<div style="position:relative"><svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${color}" stroke="#fff" stroke-width="2"/>
       <circle cx="15" cy="14" r="6" fill="#fff"/>
-    </svg>${label}</div>`,
+    </svg>${warning}${label}</div>`,
   });
 }
 
@@ -39,8 +42,9 @@ const TRUST_COLORS: Record<TrustLevel, string> = {
 
 function getSpotIcon(spot: SpotResponse): L.DivIcon {
   const color = TRUST_COLORS[spot.trustLevel];
-  const price = spot.priceMax > 0 ? `R$${spot.priceMin}-${spot.priceMax}` : "Grátis";
-  return createPinIcon(color, price);
+  const price = spot.priceMax > 0 ? `R$${spot.priceMin}-${spot.priceMax}` : t("spot.free");
+  const hasInformal = spot.informalChargeFrequency === "OFTEN" || spot.informalChargeFrequency === "ALWAYS";
+  return createPinIcon(color, price, hasInformal);
 }
 
 import type { MapFilters } from "@/app/page";
