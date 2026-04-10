@@ -11,6 +11,8 @@ import { usersApi } from "@/lib/api";
 import type { TrustLevel, SpotType, SpotResponse } from "@/types/api";
 import QuickReportModal from "@/components/reports/QuickReportModal";
 import SpotListView from "@/components/spots/SpotListView";
+import SpotBottomSheet from "@/components/spots/SpotBottomSheet";
+import OnboardingOverlay from "@/components/layout/OnboardingOverlay";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -60,6 +62,9 @@ function HomePageInner() {
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState("");
   const [searching, setSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ display_name: string; lat: string; lon: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [filters, setFilters] = useState<MapFilters>({
@@ -72,6 +77,7 @@ function HomePageInner() {
   const [nearbySpots, setNearbySpots] = useState<SpotResponse[]>([]);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
   const [quickReportSpot, setQuickReportSpot] = useState<SpotResponse | null>(null);
+  const [bottomSheetSpot, setBottomSheetSpot] = useState<SpotResponse | null>(null);
 
   // Load user preferences as default filters
   useEffect(() => {
@@ -117,6 +123,40 @@ function HomePageInner() {
     } catch { /* silently fail */ } finally { setSearching(false); }
   }, [searchValue]);
 
+  const handleSearchInput = useCallback((value: string) => {
+    setSearchValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (value.trim().length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const query = value.toLowerCase().includes("porto alegre")
+          ? value
+          : `${value}, Porto Alegre, RS, Brasil`;
+        const res = await axios.get("https://nominatim.openstreetmap.org/search", {
+          params: { q: query, format: "json", limit: 5, countrycodes: "br" },
+          headers: { "User-Agent": "ParkHere/1.0" },
+        });
+        setSuggestions(res.data);
+        setShowSuggestions(res.data.length > 0);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 400);
+  }, []);
+
+  const selectSuggestion = useCallback((lat: string, lon: string, name: string) => {
+    setSearchValue(name.split(",")[0]);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    if (flyToRef.current) {
+      flyToRef.current(parseFloat(lat), parseFloat(lon));
+    }
+  }, []);
+
   const toggleTrust = (level: TrustLevel) => {
     setFilters(prev => {
       const next = new Set(prev.trustLevels);
@@ -143,18 +183,36 @@ function HomePageInner() {
     <div className="relative flex flex-1 flex-col">
       {/* Search bar */}
       <div className="absolute top-4 left-1/2 z-[1000] w-full max-w-md -translate-x-1/2 px-4">
-        <form onSubmit={handleSearch} className="flex overflow-hidden rounded-lg bg-white shadow-lg">
-          <input type="text" value={searchValue} onChange={(e) => setSearchValue(e.target.value)}
-            placeholder={t("map.search")} className="flex-1 px-4 py-3 text-sm focus:outline-none" />
+        <form onSubmit={handleSearch} className="flex overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
+          <input type="text" value={searchValue}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            placeholder={t("map.search")} className="flex-1 px-4 py-3 text-sm focus:outline-none dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400" />
           <button type="submit" disabled={searching}
             className="bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
             {searching ? "..." : t("map.searchBtn")}
           </button>
         </form>
+        {showSuggestions && suggestions.length > 0 && (
+          <ul className="mt-1 max-h-60 overflow-y-auto rounded-lg bg-white shadow-lg dark:bg-gray-800">
+            {suggestions.map((s, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onMouseDown={() => selectSuggestion(s.lat, s.lon, s.display_name)}
+                  className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 dark:text-gray-200 dark:hover:bg-gray-700"
+                >
+                  {s.display_name.split(",").slice(0, 3).join(",")}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* View toggle + Filter button */}
-      <div className="absolute top-[4.5rem] right-4 z-[1000] flex overflow-hidden rounded-lg bg-white shadow-lg">
+      <div className="absolute top-[4.5rem] right-4 z-[1000] flex overflow-hidden rounded-lg bg-white shadow-lg dark:bg-gray-800">
         <button onClick={() => setViewMode("map")}
           className={`px-3 py-2 text-sm font-medium ${viewMode === "map" ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"}`}>
           {t("nav.map")}
@@ -167,7 +225,7 @@ function HomePageInner() {
 
       <button
         onClick={() => setFiltersOpen(!filtersOpen)}
-        className="absolute top-[4.5rem] left-4 z-[1000] flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-lg hover:bg-gray-50"
+        className="absolute top-[4.5rem] left-4 z-[1000] flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -182,7 +240,7 @@ function HomePageInner() {
 
       {/* Filter panel */}
       {filtersOpen && (
-        <div className="absolute top-[7rem] left-4 z-[1000] w-72 rounded-lg bg-white p-4 shadow-xl">
+        <div className="absolute top-[7rem] left-4 z-[1000] w-72 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800 dark:text-gray-200">
           {/* Trust Level */}
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{t("map.trustLevels")}</p>
           <div className="mb-4 space-y-1.5">
@@ -230,7 +288,7 @@ function HomePageInner() {
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-6 left-4 z-[1000] rounded-lg bg-white/90 px-3 py-2 text-[11px] shadow backdrop-blur">
+      <div className="absolute bottom-6 left-4 z-[1000] rounded-lg bg-white/90 px-3 py-2 text-[11px] shadow backdrop-blur dark:bg-gray-800/90 dark:text-gray-200">
         <div className="flex items-center gap-3">
           {ALL_TRUST.map(level => (
             <span key={level} className="flex items-center gap-1">
@@ -238,13 +296,17 @@ function HomePageInner() {
               {t(`trust.${level}` as any)}
             </span>
           ))}
+          <span className="flex items-center gap-1 border-l border-gray-300 pl-3">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[8px] text-white">⚠</span>
+            {t("informal.legend")}
+          </span>
         </div>
       </div>
 
       {/* Map or List */}
       <div className="h-[calc(100vh-3.5rem)]">
         {viewMode === "map" ? (
-          <MapView filters={filters} onFlyToReady={(fn) => {
+          <MapView filters={filters} onSpotSelect={(spot) => setBottomSheetSpot(spot)} onFlyToReady={(fn) => {
             flyToRef.current = fn;
             if (pendingFlyTo.current) {
               fn(pendingFlyTo.current.lat, pendingFlyTo.current.lng);
@@ -296,6 +358,14 @@ function HomePageInner() {
           +
         </Link>
       </div>
+
+      {/* Onboarding */}
+      <OnboardingOverlay />
+
+      {/* Bottom Sheet (mobile) */}
+      {bottomSheetSpot && (
+        <SpotBottomSheet spot={bottomSheetSpot} onClose={() => setBottomSheetSpot(null)} />
+      )}
 
       {/* Quick Report Modal */}
       {quickReportSpot && userPos && (

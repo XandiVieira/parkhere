@@ -53,6 +53,7 @@ interface MapViewProps {
   filters?: MapFilters;
   onFlyToReady?: (flyTo: (lat: number, lng: number) => void) => void;
   onSpotsLoaded?: (spots: SpotResponse[], userLat: number, userLng: number) => void;
+  onSpotSelect?: (spot: SpotResponse) => void;
 }
 
 function MapEventHandler({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number, map: L.Map) => void }) {
@@ -65,7 +66,7 @@ function MapEventHandler({ onMoveEnd }: { onMoveEnd: (lat: number, lng: number, 
   return null;
 }
 
-export default function MapView({ filters, onFlyToReady, onSpotsLoaded }: MapViewProps) {
+export default function MapView({ filters, onFlyToReady, onSpotsLoaded, onSpotSelect }: MapViewProps) {
   const [spots, setSpots] = useState<SpotResponse[]>([]);
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [loading, setLoading] = useState(false);
@@ -170,6 +171,7 @@ export default function MapView({ filters, onFlyToReady, onSpotsLoaded }: MapVie
             key={spot.id}
             position={[spot.latitude, spot.longitude]}
             icon={getSpotIcon(spot)}
+            eventHandlers={onSpotSelect ? { click: () => onSpotSelect(spot) } : undefined}
           >
             <Popup>
               <div className="min-w-[180px]">
