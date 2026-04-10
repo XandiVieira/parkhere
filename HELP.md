@@ -337,3 +337,62 @@ Frontend UX improvements and feature additions:
 
 - **Backend:** 153 tests, V1-V4 migrations (consolidated from V1-V14)
 - **Frontend:** Next.js 15, 11 routes, full Portuguese UI
+
+### Session 6 (2026-04-09 — 2026-04-10)
+
+Deployment to Render, flanelinha feature, admin dashboard, email verification, and comprehensive UX polish.
+
+- **Render Deployment:**
+  - Backend + frontend deployed to Render free tier (port 10000, Docker)
+  - PostgreSQL on Render with Flyway baseline migration
+  - Frontend Docker: NEXT_PUBLIC_* vars as build ARGs, HOSTNAME=0.0.0.0 binding
+  - Cold start handling (~2 min backend) with login spinner
+
+- **Flanelinha (Informal Charge) as First-Class Feature:**
+  - Spot-level `informalChargeFrequency` field (UNKNOWN/NEVER/SOMETIMES/OFTEN/ALWAYS)
+  - Report-level fields: type, amount, aggressiveness (1-5), note
+  - Map indicators: red ⚠ badge on pins for OFTEN/ALWAYS
+  - Filter: "Sem cobranca informal" checkbox
+  - Map legend: informal charge indicator added
+  - Migrations V6 (report fields) + V7 (spot frequency)
+
+- **Email Verification System:**
+  - Backend: token-based, 24h expiry, EmailVerificationService
+  - Frontend: /verify-email page with success/error states
+  - Unverified banner below navbar with "Resend" button
+  - Migration V5 (email_verification_tokens table)
+
+- **Admin Dashboard Completion:**
+  - GET /admin/users, /admin/spots, /admin/reports (paginated) + /admin/stats
+  - Frontend admin page with stats cards, tabbed tables, ban/deactivate/delete actions
+
+- **Anonymous Access:**
+  - Map, spots, leaderboards accessible without login
+  - Action buttons visible but redirect to /register when clicked
+  - SecurityConfig: public GET on /spots/** and /leaderboards/**
+
+- **Frontend UX Improvements:**
+  - Password reset page (/reset-password?token=...)
+  - Spot edit page (owner only)
+  - Report image upload (up to 3 images, thumbnails in report cards)
+  - Google OAuth on both login AND register pages
+  - Login spinner + disabled inputs during authentication
+  - Availability probability: shown on spot detail summary (color-coded percentage)
+  - Mobile bottom sheet: slide-up panel on marker tap (md:hidden)
+  - Analytics heatmap: visual grid replacing flat table (day x hour, color-coded availability)
+  - i18n fix: navigator.languages check for Portuguese detection
+  - Address cleanup: filters out "Regiao Geografica" noise from Nominatim
+  - Distance badge moved inside SpotCard as prop
+  - Safety rating: shows "5/5" instead of "5.0/5"
+
+- **Test Coverage:** 167 -> 190 tests
+  - New: EmailVerificationServiceTest (6 tests)
+  - Extended: AdminServiceTest (+4), AdminControllerTest (+9), AuthControllerTest (+4)
+
+- **Postman Collection:** 39 E2E steps (was 33)
+  - 6 new endpoints added (verify-email, resend-verification, admin list/stats)
+  - Report submission bodies updated with informal charge fields
+  - E2E step 11 validates informal charge response fields
+
+- **Migrations:** V5 (email verification), V6 (informal charge report fields), V7 (informal charge spot frequency)
+- **Frontend:** 15 routes, full Portuguese UI with email verification and mobile bottom sheet
