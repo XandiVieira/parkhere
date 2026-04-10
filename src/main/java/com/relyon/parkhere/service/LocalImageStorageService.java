@@ -55,8 +55,12 @@ public class LocalImageStorageService implements ImageStorageService {
         var extension = extractExtension(originalFilename);
         var filename = UUID.randomUUID() + extension;
 
+        var targetPath = uploadPath.resolve(filename).normalize();
+        if (!targetPath.startsWith(uploadPath)) {
+            throw new InvalidImageException();
+        }
+
         try {
-            var targetPath = uploadPath.resolve(filename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
             log.info("Stored image {} (original: {}, type: {}, size: {} bytes)",
                     filename, originalFilename, contentType, file.getSize());
@@ -70,7 +74,10 @@ public class LocalImageStorageService implements ImageStorageService {
     @Override
     public Resource load(String filename) {
         try {
-            var path = uploadPath.resolve(filename);
+            var path = uploadPath.resolve(filename).normalize();
+            if (!path.startsWith(uploadPath)) {
+                throw new ImageNotFoundException(filename);
+            }
             var resource = new UrlResource(path.toUri());
             if (!resource.exists() || !resource.isReadable()) {
                 log.warn("Image not found: {}", filename);
@@ -86,8 +93,11 @@ public class LocalImageStorageService implements ImageStorageService {
 
     @Override
     public void delete(String filename) {
+        var path = uploadPath.resolve(filename).normalize();
+        if (!path.startsWith(uploadPath)) {
+            return;
+        }
         try {
-            var path = uploadPath.resolve(filename);
             if (Files.deleteIfExists(path)) {
                 log.info("Deleted image: {}", filename);
             } else {

@@ -97,3 +97,14 @@ export function trustLevelMarkerColor(level: TrustLevel): string {
   };
   return colors[level] ?? "#9ca3af";
 }
+
+export function apiBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+}
+
+export function extractApiError(err: unknown): string | undefined {
+  if (err && typeof err === "object" && "response" in err) {
+    return (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+  }
+  return undefined;
+}

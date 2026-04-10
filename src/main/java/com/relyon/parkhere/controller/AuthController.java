@@ -4,6 +4,7 @@ import com.relyon.parkhere.dto.request.ForgotPasswordRequest;
 import com.relyon.parkhere.dto.request.GoogleAuthRequest;
 import com.relyon.parkhere.dto.request.LoginRequest;
 import com.relyon.parkhere.dto.request.RegisterRequest;
+import com.relyon.parkhere.dto.request.ResendVerificationRequest;
 import com.relyon.parkhere.dto.request.ResetPasswordRequest;
 import com.relyon.parkhere.dto.response.AuthResponse;
 import com.relyon.parkhere.service.EmailVerificationService;
@@ -68,11 +69,8 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<Map<String, String>> resendVerification(@RequestBody Map<String, String> body) {
-        var email = body.get("email");
-        if (email != null) {
-            userService.findByEmail(email).ifPresent(emailVerificationService::sendVerificationEmail);
-        }
+    public ResponseEntity<Map<String, String>> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        userService.findByEmail(request.email()).ifPresent(emailVerificationService::sendVerificationEmail);
         return ResponseEntity.ok(Map.of("message", "If this email is registered, a verification email has been sent"));
     }
 }

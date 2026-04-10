@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { spotsApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { t } from "@/lib/i18n";
+import { extractApiError } from "@/lib/utils";
 import type { SpotType } from "@/types/api";
 
 const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), {
@@ -77,11 +78,7 @@ export default function NewSpotPage() {
       });
       router.push(`/spots/${res.data.id}`);
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
-      setError(msg || t("newSpot.createFailed"));
+      setError(extractApiError(err) || t("newSpot.createFailed"));
     } finally {
       setLoading(false);
     }

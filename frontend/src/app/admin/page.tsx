@@ -76,18 +76,22 @@ export default function AdminPage() {
   }, [fetchTab]);
 
   const handleBan = async (id: string) => {
+    if (!confirm(t("admin.confirmAction"))) return;
     await adminApi.banUser(id);
     fetchTab();
   };
   const handleUnban = async (id: string) => {
+    if (!confirm(t("admin.confirmAction"))) return;
     await adminApi.unbanUser(id);
     fetchTab();
   };
   const handleDeactivateSpot = async (id: string) => {
+    if (!confirm(t("admin.confirmAction"))) return;
     await adminApi.deactivateSpot(id);
     fetchTab();
   };
   const handleDeleteReport = async (id: string) => {
+    if (!confirm(t("admin.confirmAction"))) return;
     await adminApi.deleteReport(id);
     fetchTab();
   };
