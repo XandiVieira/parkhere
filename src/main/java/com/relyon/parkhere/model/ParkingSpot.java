@@ -63,6 +63,9 @@ public class ParkingSpot extends BaseEntity {
     @Builder.Default
     private String informalChargeFrequency = "UNKNOWN";
 
+    @Column(length = 255)
+    private String coverImage;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;

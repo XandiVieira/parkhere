@@ -25,6 +25,7 @@ public record SpotResponse(
         LocalDateTime lastConfirmedAt,
         String address,
         String informalChargeFrequency,
+        String coverImageUrl,
         List<ScheduleResponse> schedules,
         UUID createdBy,
         LocalDateTime createdAt
@@ -33,6 +34,10 @@ public record SpotResponse(
         var schedules = spot.getSchedules() != null
                 ? spot.getSchedules().stream().map(ScheduleResponse::from).toList()
                 : List.<ScheduleResponse>of();
+
+        var coverUrl = spot.getCoverImage() != null
+                ? "/api/v1/images/" + spot.getCoverImage()
+                : null;
 
         return new SpotResponse(
                 spot.getId(),
@@ -51,6 +56,7 @@ public record SpotResponse(
                 spot.getLastConfirmedAt(),
                 spot.getAddress(),
                 spot.getInformalChargeFrequency(),
+                coverUrl,
                 schedules,
                 spot.getCreatedBy().getId(),
                 spot.getCreatedAt()

@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -67,6 +68,13 @@ public class ParkingSpotController {
     public ResponseEntity<Void> removeFavorite(@AuthenticationPrincipal User user, @PathVariable UUID id) {
         favoriteService.removeFavorite(id, user);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/cover-image")
+    public ResponseEntity<SpotResponse> updateCoverImage(@AuthenticationPrincipal User user,
+                                                          @PathVariable UUID id,
+                                                          @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.ok(parkingSpotService.updateCoverImage(id, file, user));
     }
 
     @GetMapping("/{id}")

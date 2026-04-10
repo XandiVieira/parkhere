@@ -45,6 +45,7 @@ class ParkingSpotServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(parkingSpotService, "geocodingServices", List.of());
+        ReflectionTestUtils.setField(parkingSpotService, "imageStorageServices", List.of());
     }
 
     private static final GeometryFactory GF = new GeometryFactory(new PrecisionModel(), 4326);

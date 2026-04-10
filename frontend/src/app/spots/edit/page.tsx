@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { spotsApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { t } from "@/lib/i18n";
+import { apiBaseUrl, extractApiError } from "@/lib/utils";
 import type { SpotResponse } from "@/types/api";
 
 function EditSpotForm() {
@@ -25,6 +26,8 @@ function EditSpotForm() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) { router.push("/login"); return; }
@@ -40,6 +43,7 @@ function EditSpotForm() {
       setRequiresBooking(s.requiresBooking);
       setEstimatedSpots(s.estimatedSpots !== null ? String(s.estimatedSpots) : "");
       setInformalFrequency(s.informalChargeFrequency || "UNKNOWN");
+      if (s.coverImageUrl) setCoverPreview(`${apiBaseUrl()}${s.coverImageUrl}`);
     }).catch(() => {
       router.push("/");
     }).finally(() => setPageLoading(false));
@@ -62,10 +66,7 @@ function EditSpotForm() {
       setSuccess(true);
       setTimeout(() => router.push(`/spots/${spotId}`), 1500);
     } catch (err: unknown) {
-      const msg = err && typeof err === "object" && "response" in err
-        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      setError(msg || t("editSpot.updateFailed"));
+      setError(extractApiError(err) || t("editSpot.updateFailed"));
     } finally {
       setLoading(false);
     }
@@ -148,6 +149,36 @@ function EditSpotForm() {
           <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             placeholder={t("newSpot.notesPlaceholder")} />
+        </div>
+
+        {/* Cover Image Upload */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">{t("editSpot.coverImage")}</label>
+          <p className="mb-2 text-xs text-gray-500">{t("editSpot.coverImageHint")}</p>
+          {coverPreview && (
+            <img src={coverPreview} alt="" className="mb-2 h-36 w-full rounded-md object-cover" />
+          )}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={coverUploading}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setCoverUploading(true);
+              try {
+                const res = await spotsApi.updateCoverImage(spotId, file);
+                const url = res.data.coverImageUrl;
+                setCoverPreview(url ? `${apiBaseUrl()}${url}` : null);
+              } catch {
+                setError(t("editSpot.updateFailed"));
+              } finally {
+                setCoverUploading(false);
+              }
+            }}
+            className="text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {coverUploading && <p className="mt-1 text-xs text-blue-600">{t("editSpot.uploadingCover")}</p>}
         </div>
 
         <button type="submit" disabled={loading || success}

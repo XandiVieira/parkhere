@@ -1,6 +1,7 @@
 package com.relyon.parkhere.service;
 
 import com.relyon.parkhere.dto.request.CreateSpotRequest;
+import com.relyon.parkhere.dto.request.ScheduleRequest;
 import com.relyon.parkhere.dto.request.UpdateSpotRequest;
 import com.relyon.parkhere.dto.response.SpotResponse;
 import com.relyon.parkhere.exception.NearbySpotExistsException;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class ParkingSpotService {
 
     private final ParkingSpotRepository parkingSpotRepository;
     private final List<GeocodingService> geocodingServices;
+    private final List<ImageStorageService> imageStorageServices;
     private final GamificationService gamificationService;
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
     private static final double NEARBY_THRESHOLD_METERS = 50.0;
@@ -61,18 +64,7 @@ public class ParkingSpotService {
                 .createdBy(user)
                 .build();
 
-        if (request.schedules() != null) {
-            request.schedules().forEach(s -> {
-                var schedule = ParkingSpotSchedule.builder()
-                        .parkingSpot(spot)
-                        .dayOfWeek(s.dayOfWeek())
-                        .openTime(s.openTime())
-                        .closeTime(s.closeTime())
-                        .paidOnly(s.paidOnly())
-                        .build();
-                spot.getSchedules().add(schedule);
-            });
-        }
+        applySchedules(spot, request.schedules());
 
         var saved = parkingSpotRepository.save(spot);
 
@@ -133,21 +125,37 @@ public class ParkingSpotService {
         spot.setNotes(request.notes());
 
         spot.getSchedules().clear();
-        if (request.schedules() != null) {
-            request.schedules().forEach(s -> {
-                var schedule = ParkingSpotSchedule.builder()
-                        .parkingSpot(spot)
-                        .dayOfWeek(s.dayOfWeek())
-                        .openTime(s.openTime())
-                        .closeTime(s.closeTime())
-                        .paidOnly(s.paidOnly())
-                        .build();
-                spot.getSchedules().add(schedule);
-            });
-        }
+        applySchedules(spot, request.schedules());
 
         var saved = parkingSpotRepository.save(spot);
         log.info("Parking spot updated: {} by user {}", saved.getId(), user.getEmail());
+        return SpotResponse.from(saved);
+    }
+
+    @Transactional
+    public SpotResponse updateCoverImage(UUID id, MultipartFile file, User user) {
+        var spot = parkingSpotRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new SpotNotFoundException(id.toString()));
+
+        if (!spot.getCreatedBy().getId().equals(user.getId())) {
+            throw new UnauthorizedSpotModificationException();
+        }
+
+        if (imageStorageServices.isEmpty()) {
+            throw new IllegalStateException("No image storage service configured");
+        }
+
+        var storageService = imageStorageServices.getFirst();
+
+        if (spot.getCoverImage() != null) {
+            storageService.delete(spot.getCoverImage());
+        }
+
+        var filename = storageService.store(file);
+        spot.setCoverImage(filename);
+        var saved = parkingSpotRepository.save(spot);
+
+        log.info("Cover image updated for spot {} by user {}", id, user.getEmail());
         return SpotResponse.from(saved);
     }
 
@@ -155,5 +163,19 @@ public class ParkingSpotService {
     public Page<SpotResponse> getByUser(UUID userId, Pageable pageable) {
         return parkingSpotRepository.findByCreatedByIdAndActiveTrue(userId, pageable)
                 .map(SpotResponse::from);
+    }
+
+    private void applySchedules(ParkingSpot spot, List<ScheduleRequest> schedules) {
+        if (schedules == null) return;
+        schedules.forEach(s -> {
+            var schedule = ParkingSpotSchedule.builder()
+                    .parkingSpot(spot)
+                    .dayOfWeek(s.dayOfWeek())
+                    .openTime(s.openTime())
+                    .closeTime(s.closeTime())
+                    .paidOnly(s.paidOnly())
+                    .build();
+            spot.getSchedules().add(schedule);
+        });
     }
 }

@@ -84,7 +84,7 @@ class ParkingSpotControllerTest {
         return new SpotResponse(
                 UUID.randomUUID(), "Test Spot", SpotType.STREET,
                 -22.9068, -43.1729, 5.0, 15.0, false, null, null,
-                0.0, TrustLevel.NO_DATA, 0, null, null, "UNKNOWN", List.of(),
+                0.0, TrustLevel.NO_DATA, 0, null, null, "UNKNOWN", null, List.of(),
                 createdBy, LocalDateTime.now()
         );
     }
@@ -205,7 +205,7 @@ class ParkingSpotControllerTest {
         var response = new SpotResponse(
                 spotId, "Updated Spot", SpotType.STREET,
                 -22.9068, -43.1729, 10.0, 25.0, true, 50, "notes",
-                0.0, TrustLevel.NO_DATA, 0, null, null, "UNKNOWN", List.of(),
+                0.0, TrustLevel.NO_DATA, 0, null, null, "UNKNOWN", null, List.of(),
                 user.getId(), LocalDateTime.now()
         );
         when(parkingSpotService.update(eq(spotId), any(UpdateSpotRequest.class), any(User.class))).thenReturn(response);
